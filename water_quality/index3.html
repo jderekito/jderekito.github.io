@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+  <meta content="utf-8" http-equiv="encoding">  
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.css" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.js"></script>
+      <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="https://leaflet.github.io/Leaflet.markercluster/example/screen.css" />
+
+	<link rel="stylesheet" href="https://leaflet.github.io/Leaflet.markercluster/dist/MarkerCluster.css" />
+	<link rel="stylesheet" href="https://leaflet.github.io/Leaflet.markercluster/dist/MarkerCluster.Default.css" />
+	<script src="https://leaflet.github.io/Leaflet.markercluster/dist/leaflet.markercluster-src.js"></script>
+
+</head>
+<body>
+
+	<div id="map"></div>
+	<span>Mouse over a cluster to see the bounds of its children and click a cluster to zoom to those bounds</span>
+	<script type="text/javascript">
+
+  // initialize the map
+  var map = L.map('map').setView([30.421309, -87.216915], 9);
+ 
+  var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+  var osmAttrib='Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
+  var osm = new L.TileLayer(osmUrl, {minZoom: 2, maxZoom: 15, attribution: osmAttrib}).addTo(map);
+		
+		var markers = L.markerClusterGroup();
+        
+        
+      // load GeoJSON from an external file
+      $.getJSON("ewqma_stations.txt",function(data){
+        var coIcon = L.icon({
+          iconUrl: 'water-xxl.png',
+          iconSize: [30,60]
+        });
+        L.geoJson(data,{
+          pointToLayer: function(feature,latlng){
+              //var marker = L.marker(latlng,{icon: coIcon});
+              //marker.bindPopup(feature.properties.Station_ID + '<br/>' + feature.properties.Station_Na);
+              var stationid = feature.properties.Station_ID;
+              var stationname = feature.properties.Station_Na;
+              var marker = L.marker(latlng, { title: stationid });
+                marker.bindPopup('station id:'+stationid+'</br>'+stationname);
+                markers.addLayer(marker);
+              markers.addLayer(marker);
+              return marker;
+          }
+        });
+      });        
+        
+        
+
+		map.addLayer(markers);
+
+	</script>
+</body>
+</html>

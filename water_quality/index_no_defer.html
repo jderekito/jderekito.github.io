@@ -1,0 +1,82 @@
+﻿<html>
+<head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">  
+    <title>A Leaflet map!</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <style>
+        #map{ height: 100% }
+    </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <script>
+
+    // initialize the map
+	//http://leafletjs.com/examples/layers-control/
+    var map = L.map('map').setView([30.44, -87.18], 15);
+
+    var osmUrl='http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    var osmAttrib='Map data � <a href="http://openstreetmap.org">OpenStreetMap</a> contributors';
+    var osm = new L.TileLayer(osmUrl, {minZoom: 2, maxZoom: 18, attribution: osmAttrib}).addTo(map);
+    var googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+        maxZoom: 20,
+        subdomains:['mt0','mt1','mt2','mt3']
+    });
+    var dataset_by_date_lyr_grp = new L.LayerGroup();
+    var single_layer, array_of_layers = [];
+	var dataset = ["2013_04_Nitrogen.txt", "2013_03_Nitrogen.txt"]
+	
+    //control the flow of script here
+    init();
+    //.............................
+    
+    function init() {
+        for (i=0;i < dataset.length; i++){
+            $.getJSON(dataset[i], function(wqData){
+                single_layer = L.geoJson( wqData, {
+                        style: function(feature){
+                        var fillColor,
+                            density = feature.properties.GRIDCODE;
+                        if ( density > 189 ) fillColor = "#006837";
+                        else if ( density > 150 ) fillColor = "#31a354";
+                        else if ( density > 70 ) fillColor = "#78c679";
+                        else if ( density > 35 ) fillColor = "#c2e699";
+                        else if ( density > 0 ) fillColor = "#ffffcc";
+                        else fillColor = "#f7f7f7";  // no data
+                        return { color: "#999", weight: 1, fillColor: fillColor, fillOpacity: .6 };
+                        },
+                        onEachFeature: function( feature, layer ){
+                            layer.bindPopup( "<strong>ID: " + feature.properties.ID + "</strong><br/>Value: " + feature.properties.GRIDCODE)
+                        }
+                    });
+                    array_of_layers.push(single_layer);
+                 });
+        }
+    }
+    
+	function build_legend()	{
+        //http://stackoverflow.com/questions/19916894/wait-for-multiple-getjson-calls-to-finish
+		var baseLayers = {
+			"osm": osm,
+			"Satellite": googleSat
+		}; 
+        var test_layers = array_of_layers;
+        var layerList={
+			"Nitrogen Dates":dataset_by_date_lyr_grp
+			};
+        for (i=0;i < array_of_layers.length; i++){
+            console.log(array_of_layers[i])
+        }
+		L.control.layers(baseLayers, layerList).addTo(map);		
+	}
+	
+	
+
+  </script>
+</body>
+</html>
