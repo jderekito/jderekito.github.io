@@ -1,20 +1,255 @@
-<p>I am a (spatial) data scientist and cartographer with interdisciplinary research interests that overlap with criminology, economics, psychology, and political science. My methods integrate GIS and data science and draw on my 18 years of industry experience in GIS and scripting (e.g., SQL, Python, R, and JavaScript).<br />
-<br />
-I have a Bachelor of Arts in Economics with a minor in Applied Computer Science (UCF), a Master of Science in Management Information Systems (UCF), and a Ph.D. in Geography (FSU).<br />
-<br />
-Three general questions that motivate my research:<br />
-<br />
-1) Map Usability/Usefulness: How do we design usable and valuable maps to visualize &quot;difficult-to-map&quot; events/processes?<br />
-2) Territoriality: How can maps and spatial analysis be used to study land use, property tension/potential conflict, and implicit boundaries?<br />
-3) Probabilistic Mapping: How do we capture uncertainty in data cartographically and support causal reasoning with maps?<br />
-<br />
-Student advising:<br />
-Support/advisor to students on projects overlapping my research interest and human-{map}-environment topics in general (e.g., water quality, illegal logging, and hurricane impacts)</p>
+<!DOCTYPE html>
+<html>
 
-<p>Relevant Links:</p>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial;
+    }
 
-<p><a href="https://scholar.google.com/citations?user=unEVB7EAAAAJ&amp;hl=en">Google Scholar</a></p>
+    /* Style the tab */
+    .tab {
+      overflow: hidden;
+      border: 1px solid #ccc;
+      background-color: #f1f1f1;
+    }
 
-<p><a href="https://www.linkedin.com/in/john-derek-morgan-686664b">LinkedIn</a></p>
+    /* Style the buttons inside the tab */
+    .tab button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      transition: 0.3s;
+      font-size: 17px;
+    }
 
-<p>&nbsp;</p>
+    /* Change background color of buttons on hover */
+    .tab button:hover {
+      background-color: #ddd;
+    }
+
+    /* Create an active/current tablink class */
+    .tab button.active {
+      background-color: #ccc;
+    }
+
+    /* Style the tab content */
+    .tabcontent {
+      display: none;
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-top: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="tab">
+    <button class="tablinks" onclick="openCity(event, 'Home')">Home</button>
+    <button class="tablinks" onclick="openCity(event, 'Usability')">Usability</button>
+    <button class="tablinks" onclick="openCity(event, 'Territoriality')">Territoriality</button>
+    <button class="tablinks" onclick="openCity(event, 'Probability')">Probability</button>
+    <button class="tablinks" onclick="openCity(event, 'Students')">Student Work</button>
+  </div>
+
+  <div id="Usability" class="tabcontent">
+    <h2>Map user interface and user interaction </h2>
+    <h3>Bivariate mapping</h3>
+    <p>
+    <ul>
+      <li>Strode, G., Morgan, J. D., Mesev, V., Thornton, B., Raua, E., Shortes, S., Johnson, N. (2020). <a href="https://cartographicperspectives.org/index.php/journal/article/view/1538/1817" target=_new>Operationalizing Trumbo's Four Principles for Bivariate Map Color Selection.</a> Cartographic Perspectives. DOI: 10.14714/CP94.1538</li>
+      <li>Strode, G., Mesev, V., Bleisch, S., Ziewitz, K., Reed, F., & Morgan, J. D. (2020). <a href="https://cartographicperspectives.org/index.php/journal/article/view/1569" target=_new>Exploratory Bivariate and Multivariate Geovisualizations of a Social Vulnerability Index. </a> Cartographic Perspectives. 
+    </ul>
+    </p>
+    <h3>Web GIS</h3>
+    <p>
+    <ul>
+      <li>Adkison, A.; Morgan, J. D.; Snider, D; and Schwartz, M. (2021) <a href="https://scholarsarchive.byu.edu/openwater/vol7/iss1/2" target=_new>Design and Development of a Web Mapping Prototype for Participatory Water Quality Mapping </a> Open Water Journal: Vol. 7 : Iss. 1
+      </li>
+      <li>Morgan, J. D., Eddy, B. & Coffey, J. W. (2020). <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/tgis.12197" target=_new>Activating student engagement with concept mapping: A Web GIS case study.</a> Journal of Higer Education in Geography</li>
+      <li>Morgan, J. D. (2016). <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/tgis.12197" target=_new>A User-centered Design for the Addition of Interactive Masking Capability within an existing Web GIS.</a> Transactions in GIS, 20: 807-816. doi:10.1111/tgis.12197</li>
+    </ul>
+    </p>
+    <p align="center">
+      <img src="pics/image005_2.png" alt="wq mapping" width="300" height="300">
+    </p>
+    <p align="center">
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/d780oBkqMOs?si=z5OBlPW90RDgX3Ri" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    </p>
+    <p align="center">
+      <iframe width="420" height="236.25" src="https://player.vimeo.com/video/106868836" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+    </p>
+    <h3>Addressing mobility in the mapping of crime with time geography</h3>
+    <p>
+    <ul>
+      <li>Morgan, J. D. (2010). <a href="https://search.proquest.com/openview/95858a1850cdc989f245e21572f0a515/1?pq-origsite=gscholar&cbl=18750&diss=y" target=_new>A Visual Time Geographic Approach to Crime Event Profiling.</a> FSU Dissertation</li>
+      <li>Morgan, J. D. (2009). <a href="https://www.cjresearch.com/CMJ/purchase.html" target=_new>A Visual Time Geographic Approach to Crime Event Profiling.</a> Crime Mapping: A Journal of Research and Practice Volume 1 Issue 2</li>
+    </ul>
+    </p>
+    <p>
+    <ul>
+      <li>Morgan J.D., Steinberg P.E. (2013). <a href="https://link.springer.com/chapter/10.1007/978-94-007-4997-9_15" target=_new>Testing the Usability of Time-Geographic Maps for Crime Mapping.</a> In: Leitner M. (eds) Crime Modeling and Mapping Using Geospatial Technologies. Geotechnologies and the Environment, vol 8. Springer, Dordrecht</li>
+      <li>Morgan, J. D. (2010). <a href="http://www.giscience2010.org/pdfs/paper_176.pdf" target=_new>Testing the Usability of Time-Geographic Maps.</a> Zurich, Switzerland. Extended Abstracts Volume, GIScience 2010, Zurich.</li>
+    </ul>
+    </p>
+    <p align="center">
+      <iframe width="420" height="236.25" src="https://www.youtube.com/embed/UN0jKDlYQ64" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </p>
+    <h3>History of Cartography</h3>
+    <p>
+    <ul>
+      <li>Web map I developed for a cartography class I was teaching: <a href="https://jderekito.github.io/history_of_cartography/" target=_new>Click on the events tab on the left</a> to browse via map through historical events.</li>
+    </ul>
+    </p>
+  </div>
+
+  <div id="Territoriality" class="tabcontent">
+    <h2>Participtory GIS approaches to studying the experience place, specifically public space</h2>
+    <p>Per Vukomanovic & Smart (2021), <a href="https://gistbok.ucgis.org/bok-topics/gis-participatory-modeling" target=_blank>participatory GIS</a> (PGIS)
+      is commonly used in bottom-up approaches initiated by grassroots groups,
+      non-governmental organizations, and community-based organizations.</p>
+
+    <h3>Public/shared beaches:</h3>
+    <p>
+      Morgan, J.D. & Evans, J. (2022). Participatory Mapping of Territoriality Across Florida's Beaches 1st ed. 2022 Edition. Springer</li>
+    </p>
+    <p align="center">
+      <a target=_blank href="https://www.amazon.com/Participatory-Mapping-Territoriality-Floridas-Beaches/dp/303097314X/ref=sr_1_21?qid=1659040148&refinements=p_27%3AJocelyn+Evans&s=books&sr=1-21">
+        <img src="pics/BookCover.PNG" alt="beach mapping" width="300" height="300">
+      </a>
+    </p>
+    </p>
+    <p>
+      Presentation at North American Cartographic Information Society:</li>
+    </p>
+    <p align="center">
+      <iframe width="420" height="236.25" src="https://www.youtube.com/embed/H3GNKNc0gHA" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </p>
+    <h3>Low oblique analysis of views across varying configurations of property</h3>
+    <p>
+      Vision is the art of seeing what is invisible to others.
+      ~Jonathan Swift
+    </p>
+    <p>
+    <ul>
+      <li>In-progress: Transboundary viewsheds</li>
+    </ul>
+    <ul>
+      <p>
+        <a href="https://www.instagram.com/p/B-SI9nOlbaH/?utm_source=ig_web_copy_link" target=_blank>2020 Honors project</a> using balloon aerial photography.
+      </p>
+    </ul>
+    <ul align="center">
+      <p align="center">
+        <iframe width="420" height="236.25" align="center" src="https://www.youtube.com/embed/06YfAqNi68Y" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </p>
+    </ul>
+    </p>
+    <h3>Perceptions of Safety in Parks</h3>
+    <p>
+    <ul>
+      <li>Evans, S. Z., Snyder, J. A. Abderhalden, F. P., Evans, J. & Morgan, J. D. (2021). <a href="http://cjag.us/wp-content/uploads/2021/05/The-Pursuit-Volume-4-Issue-2.pdf" target=_new>Collective efficacy and disorder in city parks.</a> The Pursuit, 4(2): 11-40.</li>
+      <li>Evans, J., Evans, S. Z., Morgan, J. D., Snyder, J. A. & Abderhalden, F. P. (2018). <a href="https://www.tandfonline.com/doi/abs/10.1080/13574809.2017.1411185" target=_new>Evaluating the quality of mid-sized city parks: a replication and extension of the Public Space Index</a> Journal of Urban Design, DOI: 10.1080/13574809.2017.1411185</li>
+      <li>Morgan, J. D., Snyder, J. A, Evans, S. Z., Evans, J. & Greller, R. (2017). <a href="https://journals.flvc.org/flgeog/issue/view/4790" target=_new>Mapping Perceptions of Safety in Parks.</a> The Florida Geographer. Volume 49</li>
+    </ul>
+    <p align="center">
+      <iframe width="420" height="236.25" src="https://www.youtube.com/embed/tmn1pwh18A0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </p>
+    <h2>Public participation in redistricting</h2>
+    <p>
+      My interest in this line of study is in the design and development of practical geospatial tools which can serve as a
+      participatory approach to districting and then redistricting as populations change.
+    </p>
+    <p>
+    <ul>
+      <li>Morgan, J.D. and Evans, J. (2018).
+        <a href="https://gistbok.ucgis.org/bok-topics/aggregation-spatial-entities-and-legislative-redistricting" target=_blank>Aggregation of Spatial Entities and Legislative Redistricting.</a>
+        The Geographic Information Science & Technology Body of Knowledge (3rd Quarter 2018 Edition),
+        John P. Wilson (Ed.). DOI:10.22224/gistbok/2018.3.6
+      </li>
+    </ul>
+    </p>
+    <i>That time I was invited to speak at Harvard on a panel with one of my favorite writers:</i>
+    <p align="center">
+      <video width="320" height="240" controls>
+        <source src="https://cga-download.hmdc.harvard.edu/publish_web/CGA_Conferences/2019_Redistricting/videos/DAY2-4_Panel_2_Geographic_historical_perspectives.mp4" type="video/mp4">
+      </video>
+    </p>
+  </div>
+
+  <div id="Probability" class="tabcontent">
+    <h3>Probabilistic Mapping</h3>
+    <p>
+    <ul>
+      <li>Morgan, J. D., Hutchins, M. W., Fox, J. F. & Rogers, K. L. (2012). <a href="https://www.norsys.com/GISRefs.htm" target=_new>A Methodological Framework focused on integrating GIS and BBN Data for Probabilistic Map Algebra Analysis.</a> Extended Abstracts Volume, GIScience 2012, Columbus.</li>
+      <p align="center"><iframe width="280" height="158" src="https://www.youtube.com/embed/Q37fSKkTZT8" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <iframe width="280" height="158" src="https://www.youtube.com/embed/hbWyZKGhUX0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </ul>
+    <ul>
+      <li>Consulting team member on Gallagher et al (2021). <a href="https://storymaps.arcgis.com/stories/0116c2ed65f04b4098a21b0b91327452" target=_new>Santa Rosa County Resilience to Future Flooding Grant</a></li>
+      <li>Douthat, T. H., Morgan, J. D., Alibasic, H. & Grant, A. (2019). <a href="https://www.sciencedirect.com/science/article/pii/S0360132319307541" target=_new>Passive Building Characteristics, and Summertime Residential Energy Use: A Spatial Analysis of Energy Efficiency in Gainesville, FL</a> Building and Environment. DOI: 10.1016/j.buildenv.2019.106542</li>
+    </ul>
+    </p>
+  </div>
+  <div id="Students" class="tabcontent">
+      <h2>Student GIS Projects</h2>
+    <p>Support/advisor to students on projects overlapping my research interest and human-{map}-environment topics in general (e.g., water quality, illegal logging, and hurricane impacts)
+    </p>
+      <li>Morgan, J.D., Bradbury, M., and Hart, T. (2022).
+        <a href="https://gistbok.ucgis.org/bok-topics/gist-criminal-justice-and-law-enforcement" target=_new> GIS&T in Criminal Justice and Law Enforcement.</a>
+        The Geographic Information Science & Technology Body of Knowledge (1st Quarter 2022 Edition),
+        John P. Wilson (ed.). DOI: 10.22224/gistbok/2022.1.4(link is external)
+      </li>
+      <li>Eslinger, R., & Morgan, J. D. (2017). <a href="https://www.tandfonline.com/doi/abs/10.1080/23754931.2017.1299633" target=_new>Spatial Cluster Analysis of High-Density Vehicle-Bear Collisions and Bridge Locations. </a> Papers in Applied Geography, 3(2), 171-181, DOI: 10.1080/23754931.2017.1299633</li>
+      <li>Core, M. L., Fisher, E., Morgan, J. D., Ramachandran, B., & Vakiti, S. (2022).
+        <a href="https://muse.jhu.edu/article/856167/summary" target=_new>
+          Lights-Out After Hurricane Michael: A Spatially Informed Bayesian Network Analysis of Power Outages.</a>
+        Southeastern Geographer, 62(2), 128-146.
+      </li>
+    <p align="center">
+      <img src="pics/ForestPower.jpg" alt="forest_and_power" width="300" height="400">
+    </p>
+    </p>
+  </div>
+
+  <div id="Home" class="tabcontent">
+    <h2>John D. Morgan, Ph.D., GISP</h2>
+    <p>I am a (spatial) data scientist and cartographer with interdisciplinary research interests that overlap with criminology, economics, psychology, and political science. My methods integrate GIS and data science and draw on my 18 years of information technology industry experience in GIS and scripting (e.g., SQL, Python, R, and JavaScript). These methods have included participitory GIS, time geography, and Baye Net/GIS integration. I welcome student colloboration on research projects.</p>
+
+    <p>I have a Bachelor of Arts in Economics with a minor in Applied Computer Science (UCF), a Master of Science in Management Information Systems (UCF), and a Ph.D. in Geography (FSU). </p>
+    <p>
+      I continue to maintain my
+      <a href="https://www.gisci.org/" target=_new>Geographic Information Systems Professional</a> (GISP) credentials.
+      Also, I am proud to have published three chapters in the UCGIS
+      <a href="http://gistbok.ucgis.org/" target=_new>Geographic Information Science & Technology Body of Knowledge</a> (BoK),
+      such as the central topic of
+      <a href="https://gistbok.ucgis.org/bok-topics/spatial-joins" target=_blank>spatial joins</a>.
+    </p>
+  </div>
+
+  <script>
+    openCity(event, 'Home')
+
+    function openCity(evt, cityName) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+      }
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById(cityName).style.display = "block";
+      evt.currentTarget.className += " active";
+    }
+  </script>
+
+</body>
+
+</html>
