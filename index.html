@@ -59,7 +59,7 @@
 		height:250px;
 		padding: 0 10px 0 0;
 	}
-  img {
+	img {
 	  width: 300px;
 	  height: 300px;
 	  transition:transform 0.25s ease;
@@ -78,7 +78,15 @@
 	  width: 375px;
 	  height: 375px;
 	}	
+	.clickable {
+	  cursor: pointer;
+	}	
   </style>
+  <script>
+	document.getElementById("myImg").addEventListener("click", function() {
+	  window.open(this.getAttribute("src"));
+	});  
+  </script>
 </head>
 
 <body>
@@ -255,9 +263,7 @@
     <h2>John D. Morgan, Ph.D., GISP</h2>
     <p>I am a (spatial) data scientist and cartographer with interdisciplinary research interests across the social and environmental sciences. My methods integrate GIS and data science and draw on my 18 years of industry experience. My research and methods are illustrated in the below concept map:</p>
 	<div align=center>	
-		<a href="https://jderekito.github.io/pics/MorganResearchAreas.cmap.png">
-			<img src="https://jderekito.github.io/pics/MorganResearchAreas.cmap.png"/>
-		</a>
+		<img id="myImg" class="clickable" src="https://jderekito.github.io/pics/MorganResearchAreas.cmap.png"/>
 	</div>
     <p>I have a Bachelor of Arts in Economics with a minor in Applied Computer Science (UCF), a Master of Science in Management Information Systems (UCF), and a Ph.D. in Geography (FSU). </p>
     <p>
