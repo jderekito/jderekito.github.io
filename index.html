@@ -79,10 +79,19 @@
 <body>
   <div class="tab">
     <button class="tablinks" onclick="openCity(event, 'Home')">Home</button>
-    <button class="tablinks" onclick="openCity(event, 'Cartography')">Cartography UI/UX</button>
-    <button class="tablinks" onclick="openCity(event, 'CrimeMobility')">Crime Mapping and Mobility</button>
+    <button class="tablinks" onclick="openCity(event, 'Cartography')">Cartography</button>
+    <button class="tablinks" onclick="openCity(event, 'CrimeMobility')">Crime Mapping</button>
 	<button class="tablinks" onclick="openCity(event, 'Hazards')">Hazards and Land Use</button>
-    <button class="tablinks" onclick="openCity(event, 'LegalGeography')">Legal Geography</button>
+	<button class="tablinks" onclick="openCity(event, 'Concept Maps')">Concept Maps</button>
+  </div>
+
+  <div id="Cartography" class="tabcontent">
+	<h2>Concept Maps as a way to "map knowledge""</h2>
+    <ul>
+      <li>Cartographic Projections</li>
+	  <li>Psychologists</li>
+	  <li>Tai Chi</li>
+    </ul>
   </div>
 
   <div id="Cartography" class="tabcontent">
@@ -137,6 +146,10 @@
       <li>Morgan, J. D. (2010). <a href="http://www.giscience2010.org/pdfs/paper_176.pdf" target=_new>Testing the Usability of Time-Geographic Maps.</a> Zurich, Switzerland. Extended Abstracts Volume, GIScience 2010, Zurich.</li>
     </ul>
     </p>
+    <h3>Using satellite imagery mapping to detect illegal activities:</h3>
+    <li>
+      Martin, V., Venable, K. B., & Morgan, D. (2025). Mapping Illegal Logging Using GeoAI. In New Research in Crime Modeling and Mapping Using Geospatial Technologies. Springer Nature</li>
+    </li>	
     <p align="center">
       <iframe width="420" height="236.25" src="https://www.youtube.com/embed/UN0jKDlYQ64" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </p>
@@ -190,15 +203,7 @@
 		<a href="https://doi.org/10.25080/YADT7194">Development and Application of a Sentinel-2 Satellite Imagery Dataset for Deep-Learning Driven Forest Wildfire Detection.</a> Proceedings of SciPy 2024.
 	  </li>  
 	</p>
-	</ul>	  
-  </div>
-
-  <div id="LegalGeography" class="tabcontent">
-    <h2>Legal geography is an interdisciplinary field that examines the relationship between law, space, and society. </h2>
-    <h3>Using satellite imagery mapping to detect illegal activities:</h3>
-    <li>
-      Martin, V., Venable, K. B., & Morgan, D. (2025). Mapping Illegal Logging Using GeoAI. In New Research in Crime Modeling and Mapping Using Geospatial Technologies. Springer Nature</li>
-    </li>
+	</ul>
     <h3>Low oblique analysis of views across varying configurations of property:</h3>
     <p>
       Vision is the art of seeing what is invisible to others.
@@ -214,7 +219,6 @@
         <iframe width="560" height="315" align="center" src="https://www.youtube.com/embed/2Z4yFKkx458?si=bKyEDqPiiLboD1vy" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
     </p>
     </p>	    
-    <h3>Public/shared beaches:</h3>
 	<li>
       Morgan, J.D. & Evans, J. (2022). Participatory Mapping of Territoriality Across Florida's Beaches 1st ed. 2022 Edition. Springer</li>
     </li>
@@ -228,17 +232,7 @@
     </p>
     <p align="center">
       <iframe width="420" height="236.25" src="https://www.youtube.com/embed/H3GNKNc0gHA" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-    </p>
-	<h3>My brief foray into redistricting:</h2>
-	<p>
-    <ul>
-      <li>Morgan, J.D. and Evans, J. (2018).
-        <a href="https://gistbok-topics.ucgis.org/GS-02-020" target=_blank>Aggregation of Spatial Entities and Legislative Redistricting.</a>
-        The Geographic Information Science & Technology Body of Knowledge (3rd Quarter 2018 Edition),
-        John P. Wilson (Ed.). DOI:10.22224/gistbok/2018.3.6
-      </li>
-    </ul> 
-	</p>
+    </p>	
   </div>
 
   <div id="Home" class="tabcontent">
@@ -248,15 +242,21 @@
 		at the University of West Florida. 
 	</p>
     <p>
-      My interdisciplinary research interests span the social and environmental sciences. Most of my work applies to urban planning and public safety. My research methods include cartography and map design (e.g., user-driven map UI/UX design and participatory GIS) and spatial data science (e.g., spatial autoregression, GeoAI, etc.). Specific research topics have focused on the mobility challenges in crime mapping, hurricanes and land use, and legal geographic topics such as public space and property.         
+      My interdisciplinary research interests span the social and environmental sciences. 
+	  Most of my work applies to urban planning and public safety. My research methods include cartography and 
+	  map design (e.g., user-driven map UI/UX design and participatory GIS) and spatial data science 
+	  (e.g., spatial autoregression, GeoAI, etc.). Specific research topics have focused on novel cartographic methods 
+	  to address the challenge of mobility in crime and how to spatially explore the tensions between hazards (e.g., hurricanes) and land use (e.g., viewshed amenities).         
     </p>
     <p>
-     I completed my Bachelor of Arts in Economics with a minor in Applied Computer Science (UCF). After college, I became a computer applications programmer working in private industry and even returned to academia, completing my Master of Science in Management Information Systems (UCF). Eventually, I completed my doctoral degree in geography while working as an IT manager for FSU's International Programs. After my doctoral studies, I worked as a senior research scientist/applied software designer at UNC Asheville's National 
+		While serving as an Aviation Electrician in the US Marine Reserves, I completed my Bachelor of Arts in Economics 
+		with a minor in Applied Computer Science (UCF). Entering the professional workforce, I became a computer applications 
+		programmer working in private industry and even returned to academia, completing my Master of Science in Management 
+		Information Systems (UCF). Eventually, I completed my doctoral degree in geography while working as an information 
+		technology manager for FSU's International Programs. 
+		After my doctoral studies, I worked as a senior research scientist/applied software designer at UNC Asheville's National 
 		Environmental Modeling and Analysis Center (<a href="https://nemac.unca.edu/" target=_new>NEMAC</a>), building full-stack Web GIS solutions for clients like the USDA Forest Service.    
     </p>    
-    <p>My doctoral advisor was Phil Steinberg, the director of Durham University’s Centre for 
-	    <a href="https://www.dur.ac.uk/research/institutes-and-centres/ibru-borders-research/" target=_new>Borders Research</a> since 2013.
-    </p>
       I continue to maintain my
       <a href="https://www.gisci.org/" target=_new>Geographic Information Systems Professional</a> (GISP) credentials.
       Also, I am proud to have published three chapters in the UCGIS
