@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+    <title>ArcGIS JS SDK - Load Web Map</title>
+    <link rel="stylesheet"
+        href="https://js.arcgis.com/4.29/esri/themes/light/main.css">
+    <script
+        src="https://js.arcgis.com/4.29/"></script>
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="viewDiv"></div>
+
+    <script>
+        require([
+            "esri/WebMap",
+            "esri/views/MapView",
+            "esri/config",
+            "esri/layers/FeatureLayer",
+            "esri/widgets/LayerList",
+            "esri/layers/ImageryTileLayer",
+            "esri/Map"
+        ], function (WebMap, MapView, esriConfig, FeatureLayer, LayerList, ImageryTileLayer, Map) {
+
+   
+                // Set your API key if needed (for ArcGIS API 4.x)
+            esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurJJfSblLJIe_8rSwJUXo29DDWzjF0HOQzf5y4jsZne2YYaeELUeyeOj2xR8sHtUBz4aVWC7k7sNrnIok66_WwxiqOTGay8U7OnSzqY-UZIEuf81nHnDdIja1NPiWMUsMj9y44KSKG4TiT84YPojOQIEuiFr9K7fp2XlfA6p4qU_jm0mJxwQHvjpDdNyS0TfSixCJMyW6NQBR5Nyb2jt084sPF_WMZrRlaLc7WXpYRn3015OsBt0U5chNG6HiTVa3yg..AT1_znK8jSYr";
+          
+            const map = new Map({
+                basemap: "topo-vector"
+            });
+
+            const view = new MapView({
+                container: "viewDiv",
+                map: map,
+                center: [-81.126924, 29.481613],
+                zoom: 17
+            });
+
+            const layerList = new LayerList({
+              view: view,
+              listItemCreatedFunction: function(event) {
+                const item = event.item;
+                item.actionsSections = [[{
+                  title: "Zoom to layer",
+                  className: "esri-icon-zoom-out-fixed",
+                  id: "zoom-to-layer"
+                }]];
+              }
+            });
+          
+             layerList.on("trigger-action", function(event) {
+              if (event.action.id === "zoom-to-layer") {
+                const layer = event.item.layer;
+                view.goTo(layer.fullExtent);
+              }
+            });
+
+            view.ui.add(layerList, "top-right");
+          
+            // Adds widget below other elements in the top left corner of the view
+            view.ui.add(layerList, {
+                position: "top-left"
+            });
+
+            const popupTemplate = {
+                title: "{Name}",  // Replace with your desired title field
+                content: [
+                    {
+                        type: "media",
+                        mediaInfos: [
+                            {
+                                type: "image",
+                                caption: "Photo Capture",
+                                // The "sourceURL" value uses curly braces to reference the attribute field that contains your image URL
+                                value: {
+                                    sourceURL: "{ImagePath}"  // Replace "ImagePath" with the actual field name containing the image URL
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        type: "text",
+                        text: "Acquisition Date: {AcquisitionDate}"
+                    }
+                ]
+            };
+
+            // https://developers.arcgis.com/javascript/latest/sample-code/intro-popuptemplate/
+            // Appears the sanitized HTML may be the issue: https://www.esri.com/arcgis-blog/products/js-api-arcgis/mapping/using-html-with-popups-in-the-arcgis-api-for-javascript/
+            //https://www.w3schools.com/howto/howto_js_popup.asp
+            const flaglerBeachOIDWebLayer0 = new FeatureLayer({
+                url: "https://services.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/FlaglerBeachOIDWebLayer0/FeatureServer",
+                title: "Flagler Beach OP - T0",
+                popupTemplate: popupTemplate
+            });
+            map.add(flaglerBeachOIDWebLayer0);
+            
+           const imageryTileLayer = new ImageryTileLayer({
+                url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/_MB_Transect03_/ImageServer"
+            });
+            map.add(imageryTileLayer);          
+        });
+
+    </script>
+</body>
+
+</html>
