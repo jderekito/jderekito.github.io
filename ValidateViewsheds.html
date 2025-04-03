@@ -26,97 +26,132 @@
     <div id="viewDiv"></div>
 
     <script>
-        require([
-            "esri/WebMap",
-            "esri/views/MapView",
-            "esri/config",
-            "esri/layers/FeatureLayer",
-            "esri/widgets/LayerList",
-            "esri/layers/ImageryTileLayer",
-            "esri/Map"
-        ], function (WebMap, MapView, esriConfig, FeatureLayer, LayerList, ImageryTileLayer, Map) {
+			require([
+			  "esri/WebMap",
+			  "esri/views/MapView",
+			  "esri/config",
+			  "esri/layers/GroupLayer",
+			  "esri/layers/FeatureLayer",
+			  "esri/widgets/LayerList",
+			  "esri/layers/ImageryTileLayer",
+			  "esri/Map"
+			], function (WebMap, MapView, esriConfig, GroupLayer, FeatureLayer, LayerList, ImageryTileLayer, Map) {
 
    
                 // Set your API key if needed (for ArcGIS API 4.x)
             esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurJJfSblLJIe_8rSwJUXo29DDWzjF0HOQzf5y4jsZne2YYaeELUeyeOj2xR8sHtUBz4aVWC7k7sNrnIok66_WwxiqOTGay8U7OnSzqY-UZIEuf81nHnDdIja1NPiWMUsMj9y44KSKG4TiT84YPojOQIEuiFr9K7fp2XlfA6p4qU_jm0mJxwQHvjpDdNyS0TfSixCJMyW6NQBR5Nyb2jt084sPF_WMZrRlaLc7WXpYRn3015OsBt0U5chNG6HiTVa3yg..AT1_znK8jSYr";
           
-            const map = new Map({
-                basemap: "topo-vector"
-            });
+  // Create ImageryTileLayers
+  const MB_Viewshed01 = new ImageryTileLayer({
+    url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/_MB_Transect01_/ImageServer",
+    title: "MB_Viewshed01"
+  });
 
-            const view = new MapView({
-                container: "viewDiv",
-                map: map,
-                center: [-81.126924, 29.481613],
-                zoom: 17
-            });
+  const MB_Viewshed03 = new ImageryTileLayer({
+    url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/_MB_Transect03_/ImageServer",
+    title: "MB_Viewshed03"
+  });
 
-            const layerList = new LayerList({
-              view: view,
-              listItemCreatedFunction: function(event) {
-                const item = event.item;
-                item.actionsSections = [[{
-                  title: "Zoom to layer",
-                  className: "esri-icon-zoom-out-fixed",
-                  id: "zoom-to-layer"
-                }]];
-              }
-            });
-          
-             layerList.on("trigger-action", function(event) {
-              if (event.action.id === "zoom-to-layer") {
-                const layer = event.item.layer;
-                view.goTo(layer.fullExtent);
-              }
-            });
+  // Create a FeatureLayer
+  const FlaglerBeachOP0 = new FeatureLayer({
+    url: "https://services.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/FlaglerBeachOIDWebLayer0/FeatureServer",
+    title: "FB_OP_T0"
+  });
 
-            view.ui.add(layerList, "top-right");
-          
-            // Adds widget below other elements in the top left corner of the view
-            view.ui.add(layerList, {
-                position: "top-left"
-            });
+  // Create an Imagery GroupLayer
+  const imageryGroup = new GroupLayer({
+    title: "Imagery Layers",
+    layers: [MB_Viewshed01, MB_Viewshed03],
+    visibilityMode: "independent" // Allows toggling layers individually
+  });
 
-            const popupTemplate = {
-                title: "{Name}",  // Replace with your desired title field
-                content: [
-                    {
-                        type: "media",
-                        mediaInfos: [
-                            {
-                                type: "image",
-                                caption: "Photo Capture",
-                                // The "sourceURL" value uses curly braces to reference the attribute field that contains your image URL
-                                value: {
-                                    sourceURL: "{ImagePath}"  // Replace "ImagePath" with the actual field name containing the image URL
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        type: "text",
-                        text: "Acquisition Date: {AcquisitionDate}"
-                    }
-                ]
-            };
+  // Create a Feature GroupLayer
+  const featureGroup = new GroupLayer({
+    title: "Feature Layers",
+    layers: [FlaglerBeachOP0],
+    visibilityMode: "independent"
+  });
 
-            // https://developers.arcgis.com/javascript/latest/sample-code/intro-popuptemplate/
-            // Appears the sanitized HTML may be the issue: https://www.esri.com/arcgis-blog/products/js-api-arcgis/mapping/using-html-with-popups-in-the-arcgis-api-for-javascript/
-            //https://www.w3schools.com/howto/howto_js_popup.asp
-            const flaglerBeachOIDWebLayer0 = new FeatureLayer({
-                url: "https://services.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/FlaglerBeachOIDWebLayer0/FeatureServer",
-                title: "Flagler Beach OP - T0",
-                popupTemplate: popupTemplate
-            });
-            map.add(flaglerBeachOIDWebLayer0);
-            
-           const imageryTileLayer = new ImageryTileLayer({
-                url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/_MB_Transect03_/ImageServer"
-            });
-            map.add(imageryTileLayer);          
+  // Create the map and add group layers
+  const map = new Map({
+    basemap: "topo-vector",
+    layers: [imageryGroup, featureGroup] 
+  });
+
+  // Create a MapView
+  const view = new MapView({
+    container: "viewDiv",
+    map: map,
+    center: [-81.126924, 29.481613], 
+    zoom: 17
+  });
+
+  // Create a LayerList widget and add it to the UI
+  const layerList = new LayerList({
+    view: view,
+    listItemCreatedFunction: function(event) {
+      const item = event.item;
+      if (item.layer.type === "group") {
+        item.open = false; // Expand groups by default
+      }
+      // Add the "Zoom to layer" action to all layers
+      item.actionsSections = [[{
+        title: "Zoom to layer",
+        className: "esri-icon-zoom-out-fixed",
+        id: "zoom-to-layer"
+      }]]; 
+      // Only add opacity slider for ImageryTileLayer
+      if (item.layer.type === "imagery-tile") {
+        // Create a slider to adjust opacity
+        item.panel = {
+          content: "opacity-slider",
+          open: false
+        };
+
+        // Create opacity slider with current layer opacity value
+        const opacitySlider = document.createElement("input");
+        opacitySlider.type = "range";
+        opacitySlider.min = 0;
+        opacitySlider.max = 1;
+        opacitySlider.step = 0.01;
+        opacitySlider.value = item.layer.opacity;
+        opacitySlider.style.width = "100%";
+
+        // Create a container for the slider with a label
+        const container = document.createElement("div");
+        container.className = "esri-widget";
+        container.style.padding = "0 15px";
+
+        const label = document.createElement("div");
+        label.textContent = "Layer Opacity:";
+        label.style.paddingBottom = "5px";
+
+        container.appendChild(label);
+        container.appendChild(opacitySlider);
+
+        // Change layer opacity based on slider value
+        opacitySlider.addEventListener("input", function(event) {
+          item.layer.opacity = event.target.value;
         });
+        item.panel.content = container;
+      }
+    }
+  });
+  
+  //Add the action ot the LayerList for zooming
+  layerList.on("trigger-action", function(event) {
+    if (event.action.id === "zoom-to-layer") {
+      const layer = event.item.layer;
+      view.goTo(layer.fullExtent);
+    }
+  });  
 
-    </script>
+  // Add LayerList to UI
+  view.ui.add(layerList, "top-right");
+
+});
+
+  </script>
 </body>
 
 </html>
