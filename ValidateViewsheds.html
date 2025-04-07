@@ -40,8 +40,9 @@ require([
   "esri/layers/ImageryTileLayer",
   "esri/Map",
   "esri/widgets/Legend",
-  "esri/widgets/Expand"
-], function (WebMap, MapView, esriConfig, GroupLayer, FeatureLayer, LayerList, ImageryTileLayer, Map, Legend, Expand) {
+  "esri/widgets/Expand", 
+  "esri/widgets/BasemapGallery"
+], function (WebMap, MapView, esriConfig, GroupLayer, FeatureLayer, LayerList, ImageryTileLayer, Map, Legend, Expand, BasemapGallery) {
 
   // Set your API key if needed
   esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurJJfSblLJIe_8rSwJUXo29Af85DO7-QbvPu3IfT6O8o4UiGmwMpGO_GLZpcproO1_IPNuR3_3oTbgJNt2rlTlR9SXwoljA6hwTg-CqLFQhpyVUuIG91QvNLktBx9fLAgJDTcO3psz3QcURPi-qFczkEAkLVZPIwaHmm78zrJR7WoM8tCFDZzStAeCJ7Tc1VpnEo51-yjz0ijaR7xQ9p-A9kuGPt49mYb3pAuWaHxjVOOop-zWM6WJvuRi5CEr2Bn94jOikyfLQgnbkKTGeSD-RxsgfvAjj77Izc0r8bM4FQOAT1_znK8jSYr";
@@ -124,15 +125,13 @@ require([
   const MB_T0 = new FeatureLayer({
     url: "https://services.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/MB_Transect0/FeatureServer",
     title: "MB_T0", 
-    popupTemplate: popupTemplate, 
-    visible: false  // 👈 Make this layer off by default
+    popupTemplate: popupTemplate
   }); 
   
   const MB_T1 = new FeatureLayer({
     url: "https://services.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/MB_Transect1/FeatureServer",
     title: "MB_T1", 
-    popupTemplate: popupTemplate, 
-    visible: false  // 👈 Make this layer off by default
+    popupTemplate: popupTemplate
   }); 
   
   const MB_OID_T0 = new FeatureLayer({
@@ -172,9 +171,27 @@ require([
   const view = new MapView({
     container: "viewDiv",
     map: map,
-    center: [-85.42, 29.949], 
+    center: [-85.416180, 29.948052], 
     zoom: 16
   });
+  
+  // Create a BasemapGallery widget
+  const basemapGallery = new BasemapGallery({
+    view: view,
+    container: document.createElement("div")
+  });
+
+  // Wrap it in an Expand widget
+  const basemapExpand = new Expand({
+    view: view,
+    content: basemapGallery,
+    expandTooltip: "Change Basemap",
+    collapseTooltip: "Close Basemap Gallery",
+    expandIconClass: "esri-icon-basemap"
+  });
+
+  // Add it to the top-right corner of the view
+  view.ui.add(basemapExpand, "top-right");  
 
   // Create a LayerList widget and add it to the UI
   const layerList = new LayerList({
