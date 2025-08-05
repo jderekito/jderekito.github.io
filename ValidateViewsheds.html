@@ -4,7 +4,7 @@
 <head>
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0">
-    <title>Validate Viewsheds Viewer</title>
+    <title>ArcGIS JS SDK - Load Web Map</title>
     <link rel="stylesheet"
         href="https://js.arcgis.com/4.29/esri/themes/light/main.css">
     <script
@@ -27,6 +27,15 @@
 </head>
 
 <body>
+      <div style="position: absolute; top: 10px; left: 10px; z-index: 10; background: white; padding: 5px; border-radius: 4px;">
+      <label for="locationSelect">Go to location:</label>
+      <select id="locationSelect">
+        <option value="">--Select--</option>
+        <option value="mexbeach">Mexico Beach</option>
+        <option value="staugy">Saint Augustine</option>
+        
+      </select>
+    </div>
     <div id="viewDiv"></div>
 
   <script>
@@ -40,12 +49,35 @@ require([
   "esri/layers/ImageryTileLayer",
   "esri/Map",
   "esri/widgets/Legend",
-  "esri/widgets/Expand", 
-  "esri/widgets/BasemapGallery"
-], function (WebMap, MapView, esriConfig, GroupLayer, FeatureLayer, LayerList, ImageryTileLayer, Map, Legend, Expand, BasemapGallery) {
+  "esri/widgets/Expand"
+], function (WebMap, MapView, esriConfig, GroupLayer, FeatureLayer, LayerList, ImageryTileLayer, Map, Legend, Expand) {
 
   // Set your API key if needed
   esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurJJfSblLJIe_8rSwJUXo29CukSXw7TXQcb76VJ9LR7csc2mjQ5UiUnr9iHuoUBQu3oOAYDGkR--oiXRYhwNqQ9qG_tklYEAQzOkNAnxghJyovwba-6x2WDMNMMkCL51WgXYq_gYzRp5P1TIy_Ub9ROnoZxGesNE1IYhsowrBCDvMZ1StaegQ9TMlLS8-BhrJrjMuBG-hYULvm2If56fuJVSvD7MR-mx8KLiNSRydYpBm3pDlcJKnvn8o_j-c92urrJPqzoysWQ0lPCNrvxPc534D-st0iGSHwlX_h5R2-pIeAT1_znK8jSYr";
+  
+  
+  // Coordinates for predefined locations
+  const locations = {
+    mexbeach: {
+      center: [-85.40932, 29.94166],
+      zoom: 13
+    },
+    staugy: {
+      center: [-81.31671, 29.89601],
+      zoom: 13
+    }
+  };
+
+  // Add dropdown zoom functionality
+  document.getElementById("locationSelect").addEventListener("change", function (e) {
+    const selected = e.target.value;
+    if (locations[selected]) {
+      view.goTo({
+        center: locations[selected].center,
+        zoom: locations[selected].zoom
+      });
+    }
+  });
 
   // Create ImageryTileLayers
   const MB_Viewshed00 = new ImageryTileLayer({
@@ -174,24 +206,6 @@ require([
     center: [-85.416180, 29.948052], 
     zoom: 16
   });
-  
-  // Create a BasemapGallery widget
-  const basemapGallery = new BasemapGallery({
-    view: view,
-    container: document.createElement("div")
-  });
-
-  // Wrap it in an Expand widget
-  const basemapExpand = new Expand({
-    view: view,
-    content: basemapGallery,
-    expandTooltip: "Change Basemap",
-    collapseTooltip: "Close Basemap Gallery",
-    expandIconClass: "esri-icon-basemap"
-  });
-
-  // Add it to the top-right corner of the view
-  view.ui.add(basemapExpand, "top-right");  
 
   // Create a LayerList widget and add it to the UI
   const layerList = new LayerList({
@@ -268,12 +282,12 @@ require([
       {
         layer: MB_LULC_T1,
         title: "MB_LULC_T1"
-      }
-    ],	 
+      }      
+    ],
     style: {
       type: "card",
       layout: "side-by-side"
-    },	
+    },
     container: document.createElement("div"),
     className: "esri-widget legend-container"
   });
