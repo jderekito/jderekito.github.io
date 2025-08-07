@@ -4,7 +4,7 @@
 <head>
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0">
-    <title>ArcGIS JS SDK - Load Web Map</title>
+    <title>VISTA (Viewshed Impacts from Shoreline Transformation and Access)</title>
     <link rel="stylesheet"
         href="https://js.arcgis.com/4.29/esri/themes/light/main.css">
     <script
@@ -32,8 +32,8 @@
       <select id="locationSelect">
         <option value="">--Select--</option>
         <option value="mexbeach">Mexico Beach</option>
-        <option value="staugy">Saint Augustine</option>
-        
+        <option value="staugy">St. Augustine</option>
+		<option value="flagler">Flagler Beach</option>
       </select>
     </div>
     <div id="viewDiv"></div>
@@ -64,6 +64,10 @@ require([
     },
     staugy: {
       center: [-81.31671, 29.89601],
+      zoom: 13
+    },
+    flager: {
+      center: [-81.127757, 29.480090],
       zoom: 13
     }
   };
