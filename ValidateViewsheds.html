@@ -4,7 +4,7 @@
 <head>
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0">
-    <title>VISTA (Viewshed Impacts from Shoreline Transformation and Access)</title>
+    <title>ArcGIS JS SDK - Load Web Map</title>
     <link rel="stylesheet"
         href="https://js.arcgis.com/4.29/esri/themes/light/main.css">
     <script
@@ -32,8 +32,8 @@
       <select id="locationSelect">
         <option value="">--Select--</option>
         <option value="mexbeach">Mexico Beach</option>
-        <option value="staugy">St. Augustine</option>
-		<option value="flagler">Flagler Beach</option>
+        <option value="staugy">Saint Augustine</option>
+        
       </select>
     </div>
     <div id="viewDiv"></div>
@@ -53,7 +53,7 @@ require([
 ], function (WebMap, MapView, esriConfig, GroupLayer, FeatureLayer, LayerList, ImageryTileLayer, Map, Legend, Expand) {
 
   // Set your API key if needed
-  esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurJJfSblLJIe_8rSwJUXo29CukSXw7TXQcb76VJ9LR7csc2mjQ5UiUnr9iHuoUBQu3oOAYDGkR--oiXRYhwNqQ9qG_tklYEAQzOkNAnxghJyovwba-6x2WDMNMMkCL51WgXYq_gYzRp5P1TIy_Ub9ROnoZxGesNE1IYhsowrBCDvMZ1StaegQ9TMlLS8-BhrJrjMuBG-hYULvm2If56fuJVSvD7MR-mx8KLiNSRydYpBm3pDlcJKnvn8o_j-c92urrJPqzoysWQ0lPCNrvxPc534D-st0iGSHwlX_h5R2-pIeAT1_znK8jSYr";
+  esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurJJfSblLJIe_8rSwJUXo29Br4VITRFmQhcdF-HhMrMz450tmUGuM9ppX1qT156rvd5vlvHvif-5y5Ybl4LnL42vsnFRyudrBqLMdI_6SWUmbixFl1rjXoh-Z8qiJHMWE0FCU6KlAfh2EzEV9e0W_eWSZevrAUMycDCu8hhPgROCvXyB2udBrOFrPHH9O-3M6snJPDaGeN6GVbrrU_jFPzBXWx8MxctNb72LeGQDFohsLbY5sOhR4UeWrhl8T7tvrP5ic6r0RiNVt5NipU4bQBhst1gf7YXtrcLaFEpi5t_L6NB5XAFfI59jZKcrv6urLxVE7JxFHXcXMLGeE9z2pEaImv074IIuzvf1XvW6w4NUY-GeABI7BsYe7-PaVeX93xMMmxJ8r-xatJtGl_r90rlg.AT1_RgAPkDJo";
   
   
   // Coordinates for predefined locations
@@ -64,10 +64,6 @@ require([
     },
     staugy: {
       center: [-81.31671, 29.89601],
-      zoom: 13
-    },
-    flagler: {
-      center: [-81.127757, 29.480090],
       zoom: 13
     }
   };
