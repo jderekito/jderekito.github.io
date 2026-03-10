@@ -298,9 +298,12 @@
     <div id="viewDiv"></div>
 
     <script type="module">
-        const [Map, MapView] = await $arcgis.import([
+        const [Map, MapView, GraphicsLayer, Graphic, Point] = await $arcgis.import([
             "@arcgis/core/Map.js",
-            "@arcgis/core/views/MapView.js"
+            "@arcgis/core/views/MapView.js",
+            "@arcgis/core/layers/GraphicsLayer.js",
+            "@arcgis/core/Graphic.js",
+            "@arcgis/core/geometry/Point.js"
         ]);
 
         // ── Location config ──────────────────────────────────────────
@@ -317,8 +320,8 @@
             },
             vilano: {
                 label: "Vilano Beach (Blue House)",
-                center: [-81.29850, 29.92640],
-                zoom: 15
+                center: [-81.298978, 29.936989],
+                zoom: 17
             },
             ftpickens: {
                 label: "Fort Pickens",
@@ -552,13 +555,65 @@
         };
 
         // ── Map setup ────────────────────────────────────────────────
-        const map = new Map({ basemap: "satellite" });
+        const graphicsLayer = new GraphicsLayer();
+        const map = new Map({ basemap: "satellite", layers: [graphicsLayer] });
         const view = new MapView({
             container: "viewDiv",
             map: map,
             center: [-81.26540, 29.85680],
             zoom: 14
         });
+
+        // ── Blue House marker — 3560 Coastal Hwy, Saint Augustine FL ─
+        const blueHousePoint = new Point({ longitude: -81.298978, latitude: 29.936989 });
+
+        const blueHouseSymbol = {
+            type: "picture-marker",
+            url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 48" width="40" height="48">
+                  <filter id="shadow">
+                    <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#00000066"/>
+                  </filter>
+                  <!-- Pin shape -->
+                  <path d="M20 2 C10 2 2 10 2 20 C2 32 20 46 20 46 C20 46 38 32 38 20 C38 10 30 2 20 2Z"
+                        fill="#1a6fcc" stroke="white" stroke-width="2" filter="url(#shadow)"/>
+                  <!-- House icon -->
+                  <g transform="translate(20,19)" fill="white">
+                    <!-- Roof -->
+                    <polygon points="-9,0 0,-8 9,0" />
+                    <!-- Body -->
+                    <rect x="-7" y="0" width="14" height="9" />
+                    <!-- Door -->
+                    <rect x="-2.5" y="3" width="5" height="6" fill="#1a6fcc"/>
+                    <!-- Window left -->
+                    <rect x="-6" y="1.5" width="3" height="3" fill="#1a6fcc"/>
+                    <!-- Window right -->
+                    <rect x="3" y="1.5" width="3" height="3" fill="#1a6fcc"/>
+                  </g>
+                </svg>
+            `),
+            width: "28px",
+            height: "34px",
+            yoffset: "17px"
+        };
+
+        const blueHouseGraphic = new Graphic({
+            geometry: blueHousePoint,
+            symbol: blueHouseSymbol,
+            attributes: {
+                name: "3560 Coastal Hwy",
+                address: "3560 Coastal Hwy, Saint Augustine, FL 32084",
+                description: "Vilano Beach Blue House"
+            },
+            popupTemplate: {
+                title: "🏠 3560 Coastal Hwy",
+                content: "Saint Augustine, FL 32084<br><br>" +
+                    "<a href='https://www.zillow.com/homedetails/3560-Coastal-Hwy-Saint-Augustine-FL-32084/66755750_zpid/' " +
+                    "target='_blank' style='color:#1a6fcc;font-weight:bold;'>View on Zillow →</a>"
+            }
+        });
+
+        graphicsLayer.add(blueHouseGraphic);
 
         // ── Layer panel state ────────────────────────────────────────
         let panelOpen = false;
