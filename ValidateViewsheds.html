@@ -565,7 +565,7 @@
         });
 
         // ── Blue House marker — 3560 Coastal Hwy, Saint Augustine FL ─
-        const blueHousePoint = new Point({ longitude: -81.298978, latitude: 29.936989 });
+        const blueHousePoint = new Point({ longitude: -81.298981, latitude: 29.936989 });
 
         const blueHouseSymbol = {
             type: "picture-marker",
@@ -597,23 +597,33 @@
             yoffset: "17px"
         };
 
-       const blueHouseGraphic = new Graphic({
+        const blueHouseGraphic = new Graphic({
             geometry: blueHousePoint,
             symbol: blueHouseSymbol,
             attributes: {
                 name: "3560 Coastal Hwy",
                 address: "3560 Coastal Hwy, Saint Augustine, FL 32084",
-                description: "Vilano Beach Blue House"
-            },
-            popupTemplate: {
-                title: "🏠 3560 Coastal Hwy",
-                content: "Saint Augustine, FL 32084<br><br>" +
-                    "<a href='https://www.zillow.com/homedetails/3560-Coastal-Hwy-Saint-Augustine-FL-32084/66755750_zpid/?utm_campaign=zillowwebmessage&utm_medium=referral&utm_source=txtshare' " +
-                    "target='_blank' style='color:#1a6fcc;font-weight:bold;'>View on Zillow →</a>"
+                zillowUrl: "https://www.zillow.com/homedetails/3560-Coastal-Hwy-Saint-Augustine-FL-32084/66755750_zpid/?utm_campaign=zillowwebmessage&utm_medium=referral&utm_source=txtshare"
             }
         });
 
         graphicsLayer.add(blueHouseGraphic);
+
+        // ── Open Zillow on icon click ─────────────────────────────────
+        view.on("click", async (event) => {
+            const response = await view.hitTest(event);
+            const hit = response.results.find(r => r.graphic === blueHouseGraphic);
+            if (hit) {
+                window.open(hit.graphic.attributes.zillowUrl, "_blank");
+            }
+        });
+
+        // ── Pointer cursor on hover ───────────────────────────────────
+        view.on("pointer-move", async (event) => {
+            const response = await view.hitTest(event);
+            const hit = response.results.find(r => r.graphic === blueHouseGraphic);
+            view.cursor = hit ? "pointer" : "default";
+        });
 
         // ── Layer panel state ────────────────────────────────────────
         let panelOpen = false;
