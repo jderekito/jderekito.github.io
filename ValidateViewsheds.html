@@ -4,36 +4,297 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArcGIS JS SDK - Basemap Viewer</title>
 
-    <!-- Set API key BEFORE loading the SDK -->
     <script>
         var esriConfig = {
             apiKey: "AAPTxy8BH1VEsoebNVZXo8HurJJfSblLJIe_8rSwJUXo29Br4VITRFmQhcdF-HhMrMz450tmUGuM9ppX1qT156rvd5vlvHvif-5y5Ybl4LnL42vsnFRyudrBqLMdI_6SWUmbixFl1rjXoh-Z8qiJHMWE0FCU6KlAfh2EzEV9e0W_eWSZevrAUMycDCu8hhPgROCvXyB2udBrOFrPHH9O-3M6snJPDaGeN6GVbrrU_jFPzBXWx8MxctNb72LeGQDFohsLbY5sOhR4UeWrhl8T7tvrP5ic6r0RiNVt5NipU4bQBhst1gf7YXtrcLaFEpi5t_L6NB5XAFfI59jZKcrv6urLxVE7JxFHXcXMLGeE9z2pEaImv074IIuzvf1XvW6w4NUY-GeABI7BsYe7-PaVeX93xMMmxJ8r-xatJtGl_r90rlg.AT1_RgAPkDJo"
         };
     </script>
-
-    <!-- Load ArcGIS Maps SDK for JavaScript 5.0 from CDN -->
     <script type="module" src="https://js.arcgis.com/5.0/"></script>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
         html, body, #viewDiv {
             padding: 0;
             margin: 0;
             height: 100%;
             width: 100%;
+            font-family: 'Syne', sans-serif;
+        }
+
+        /* ── Top bar ── */
+        #topBar {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            background: rgba(10, 14, 20, 0.88);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        #topBar label {
+            color: rgba(255,255,255,0.55);
+            font-size: 11px;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        #locationSelect {
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+            min-width: 240px;
+        }
+        #locationSelect:hover { border-color: rgba(99,202,183,0.6); }
+        #locationSelect option { background: #1a1f2b; color: #fff; }
+
+        /* ── Layer Panel Toggle Button ── */
+        #layerToggleBtn {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 13px;
+            background: rgba(99,202,183,0.12);
+            border: 1px solid rgba(99,202,183,0.35);
+            border-radius: 6px;
+            color: #63cab7;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            white-space: nowrap;
+        }
+        #layerToggleBtn:hover { background: rgba(99,202,183,0.22); border-color: rgba(99,202,183,0.6); }
+        #layerToggleBtn svg { flex-shrink: 0; }
+
+        /* ── Layer Panel ── */
+        #layerPanel {
+            position: absolute;
+            top: 52px;
+            right: 16px;
+            z-index: 15;
+            width: 270px;
+            background: rgba(10, 14, 20, 0.92);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            transform-origin: top right;
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+        #layerPanel.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.96) translateY(-6px);
+        }
+
+        #layerPanelHeader {
+            padding: 12px 14px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        #layerPanelHeader span {
+            font-size: 11px;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.45);
+        }
+        #locationLabel {
+            font-size: 12px;
+            font-weight: 600;
+            color: #63cab7;
+            font-family: 'Syne', sans-serif;
+            letter-spacing: 0;
+            text-transform: none;
+        }
+
+        #layerPanelBody {
+            padding: 8px 0 10px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+        #layerPanelBody::-webkit-scrollbar { width: 4px; }
+        #layerPanelBody::-webkit-scrollbar-track { background: transparent; }
+        #layerPanelBody::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+        /* ── Groups ── */
+        .layer-group { margin-bottom: 4px; }
+
+        .group-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 14px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s;
+        }
+        .group-header:hover { background: rgba(255,255,255,0.04); }
+
+        .group-chevron {
+            width: 14px;
+            height: 14px;
+            color: rgba(255,255,255,0.3);
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+        .group-header.collapsed .group-chevron { transform: rotate(-90deg); }
+
+        .group-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .group-title {
+            font-size: 11px;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.65);
+            flex: 1;
+        }
+
+        .group-count {
+            font-size: 10px;
+            font-family: 'DM Mono', monospace;
+            color: rgba(255,255,255,0.25);
+        }
+
+        .group-items {
+            overflow: hidden;
+            transition: max-height 0.25s ease;
+        }
+        .group-items.collapsed { max-height: 0 !important; }
+
+        /* ── Layer Row ── */
+        .layer-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 14px 5px 36px;
+            transition: background 0.12s;
+            cursor: pointer;
+        }
+        .layer-row:hover { background: rgba(255,255,255,0.04); }
+
+        .layer-row input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border: 1.5px solid rgba(255,255,255,0.25);
+            border-radius: 3px;
+            flex-shrink: 0;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .layer-row input[type="checkbox"]:checked {
+            background: #63cab7;
+            border-color: #63cab7;
+        }
+        .layer-row input[type="checkbox"]:checked::after {
+            content: '';
+            position: absolute;
+            left: 3px; top: 1px;
+            width: 5px; height: 8px;
+            border: 1.5px solid #0a0e14;
+            border-top: none; border-left: none;
+            transform: rotate(45deg);
+        }
+
+        .layer-name {
+            font-size: 12px;
+            font-weight: 400;
+            color: rgba(255,255,255,0.75);
+            flex: 1;
+            line-height: 1.3;
+        }
+
+        .layer-badge {
+            font-size: 9px;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.05em;
+            padding: 2px 5px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        /* ── No layers state ── */
+        .no-layers {
+            padding: 18px 14px;
+            text-align: center;
+            color: rgba(255,255,255,0.25);
+            font-size: 11px;
+            font-family: 'DM Mono', monospace;
+            letter-spacing: 0.06em;
+        }
+
+        /* ── Divider ── */
+        .group-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.05);
+            margin: 2px 14px;
         }
     </style>
 </head>
 <body>
-    <div style="position: absolute; top: 10px; left: 10px; z-index: 10; background: white; padding: 5px; border-radius: 4px;">
-        <label for="locationSelect">Go to location:</label>
+    <!-- Top Bar -->
+    <div id="topBar">
+        <label for="locationSelect">Location</label>
         <select id="locationSelect">
-            <option value="">--Select--</option>
+            <option value="">— Select a site —</option>
             <option value="staugybeach">St. Augustine Beach</option>
             <option value="staugyfort">St. Augustine Historic Fort (A1A)</option>
             <option value="vilano">Vilano Beach (Blue House)</option>
             <option value="ftpickens">Fort Pickens (360 Imagery Example)</option>
         </select>
+
+        <button id="layerToggleBtn" title="Toggle layer panel">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <rect x="1" y="2" width="14" height="3" rx="1"/>
+                <rect x="1" y="7" width="14" height="3" rx="1"/>
+                <rect x="1" y="12" width="14" height="3" rx="1"/>
+            </svg>
+            Layers
+        </button>
     </div>
+
+    <!-- Layer Panel -->
+    <div id="layerPanel" class="hidden">
+        <div id="layerPanelHeader">
+            <span>Layer Picker</span>
+            <span id="locationLabel">No location selected</span>
+        </div>
+        <div id="layerPanelBody">
+            <div class="no-layers">Select a location to load layers</div>
+        </div>
+    </div>
+
     <div id="viewDiv"></div>
 
     <script type="module">
@@ -42,17 +303,256 @@
             "@arcgis/core/views/MapView.js"
         ]);
 
+        // ── Location config ──────────────────────────────────────────
         const locations = {
-            staugybeach: { center: [-81.26540, 29.85680], zoom: 15 },
-            staugyfort:  { center: [-81.31180, 29.89810], zoom: 16 },
-            vilano:      { center: [-81.29850, 29.92640], zoom: 15 },
-            ftpickens:   { center: [-87.290411, 30.327058], zoom: 15 }
+            staugybeach: {
+                label: "St. Augustine Beach",
+                center: [-81.26540, 29.85680],
+                zoom: 15
+            },
+            staugyfort: {
+                label: "St. Augustine Historic Fort",
+                center: [-81.31180, 29.89810],
+                zoom: 16
+            },
+            vilano: {
+                label: "Vilano Beach (Blue House)",
+                center: [-81.29850, 29.92640],
+                zoom: 15
+            },
+            ftpickens: {
+                label: "Fort Pickens",
+                center: [-87.290411, 30.327058],
+                zoom: 15
+            }
         };
 
-        const map = new Map({
-            basemap: "satellite"
-        });
+        // ── Layer definitions per location ───────────────────────────
+        // Each group: { id, label, color, layers: [{id, name, badge?, checked?}] }
+        const layerData = {
+            staugybeach: [
+                {
+                    id: "obs_points",
+                    label: "Observation Points",
+                    color: "#63cab7",
+                    layers: [
+                        { id: "obs_sab_1", name: "OBS-SAB-01 — Main Access", checked: true },
+                        { id: "obs_sab_2", name: "OBS-SAB-02 — North End", checked: false },
+                        { id: "obs_sab_3", name: "OBS-SAB-03 — South End", checked: false }
+                    ]
+                },
+                {
+                    id: "slr40",
+                    label: "SLR 40cm",
+                    color: "#4fa3e0",
+                    layers: [
+                        { id: "slr40_sab_flood", name: "SAB Flood Extent 40cm", badge: "40cm", checked: false },
+                        { id: "slr40_sab_depth", name: "SAB Depth Grid 40cm", badge: "40cm", checked: false }
+                    ]
+                },
+                {
+                    id: "slr70",
+                    label: "SLR 70cm",
+                    color: "#e07c4f",
+                    layers: [
+                        { id: "slr70_sab_flood", name: "SAB Flood Extent 70cm", badge: "70cm", checked: false },
+                        { id: "slr70_sab_depth", name: "SAB Depth Grid 70cm", badge: "70cm", checked: false }
+                    ]
+                },
+                {
+                    id: "landuse",
+                    label: "Land Use",
+                    color: "#a78bfa",
+                    layers: [
+                        { id: "lu_sab_2024", name: "SAB Land Use 2024", checked: false },
+                        { id: "lu_sab_zoning", name: "SAB Zoning Districts", checked: false }
+                    ]
+                },
+                {
+                    id: "viewsheds",
+                    label: "Viewsheds",
+                    color: "#f59e42",
+                    layers: [
+                        { id: "vs_sab_1", name: "Viewshed — OBS-SAB-01", checked: false },
+                        { id: "vs_sab_2", name: "Viewshed — OBS-SAB-02", checked: false }
+                    ]
+                },
+                {
+                    id: "validated_viewsheds",
+                    label: "Validated Viewsheds",
+                    color: "#34d399",
+                    layers: [
+                        { id: "vvs_sab_1", name: "Validated VS — OBS-SAB-01", badge: "✓", checked: false }
+                    ]
+                }
+            ],
+            staugyfort: [
+                {
+                    id: "obs_points",
+                    label: "Observation Points",
+                    color: "#63cab7",
+                    layers: [
+                        { id: "obs_fort_1", name: "OBS-FORT-01 — Castillo Entrance", checked: true },
+                        { id: "obs_fort_2", name: "OBS-FORT-02 — Seawall", checked: false }
+                    ]
+                },
+                {
+                    id: "slr40",
+                    label: "SLR 40cm",
+                    color: "#4fa3e0",
+                    layers: [
+                        { id: "slr40_fort_flood", name: "Fort Flood Extent 40cm", badge: "40cm", checked: false }
+                    ]
+                },
+                {
+                    id: "slr70",
+                    label: "SLR 70cm",
+                    color: "#e07c4f",
+                    layers: [
+                        { id: "slr70_fort_flood", name: "Fort Flood Extent 70cm", badge: "70cm", checked: false }
+                    ]
+                },
+                {
+                    id: "landuse",
+                    label: "Land Use",
+                    color: "#a78bfa",
+                    layers: [
+                        { id: "lu_fort_hist", name: "Historic District Land Use", checked: false },
+                        { id: "lu_fort_zone", name: "A1A Corridor Zoning", checked: false }
+                    ]
+                },
+                {
+                    id: "viewsheds",
+                    label: "Viewsheds",
+                    color: "#f59e42",
+                    layers: [
+                        { id: "vs_fort_1", name: "Viewshed — Castillo Entrance", checked: false },
+                        { id: "vs_fort_2", name: "Viewshed — Seawall", checked: false }
+                    ]
+                },
+                {
+                    id: "validated_viewsheds",
+                    label: "Validated Viewsheds",
+                    color: "#34d399",
+                    layers: [
+                        { id: "vvs_fort_1", name: "Validated VS — Castillo", badge: "✓", checked: false },
+                        { id: "vvs_fort_2", name: "Validated VS — Seawall", badge: "✓", checked: false }
+                    ]
+                }
+            ],
+            vilano: [
+                {
+                    id: "obs_points",
+                    label: "Observation Points",
+                    color: "#63cab7",
+                    layers: [
+                        { id: "obs_vil_1", name: "OBS-VIL-01 — Blue House", checked: true },
+                        { id: "obs_vil_2", name: "OBS-VIL-02 — Beach Access", checked: false }
+                    ]
+                },
+                {
+                    id: "slr40",
+                    label: "SLR 40cm",
+                    color: "#4fa3e0",
+                    layers: [
+                        { id: "slr40_vil", name: "Vilano Flood Extent 40cm", badge: "40cm", checked: false }
+                    ]
+                },
+                {
+                    id: "slr70",
+                    label: "SLR 70cm",
+                    color: "#e07c4f",
+                    layers: [
+                        { id: "slr70_vil", name: "Vilano Flood Extent 70cm", badge: "70cm", checked: false }
+                    ]
+                },
+                {
+                    id: "landuse",
+                    label: "Land Use",
+                    color: "#a78bfa",
+                    layers: [
+                        { id: "lu_vil_res", name: "Residential Land Use", checked: false }
+                    ]
+                },
+                {
+                    id: "viewsheds",
+                    label: "Viewsheds",
+                    color: "#f59e42",
+                    layers: [
+                        { id: "vs_vil_1", name: "Viewshed — Blue House", checked: false }
+                    ]
+                },
+                {
+                    id: "validated_viewsheds",
+                    label: "Validated Viewsheds",
+                    color: "#34d399",
+                    layers: [
+                        { id: "vvs_vil_1", name: "Validated VS — Blue House", badge: "✓", checked: false }
+                    ]
+                }
+            ],
+            ftpickens: [
+                {
+                    id: "obs_points",
+                    label: "Observation Points",
+                    color: "#63cab7",
+                    layers: [
+                        { id: "obs_ftp_1", name: "OBS-FTP-01 — Fort Gate", checked: true },
+                        { id: "obs_ftp_2", name: "OBS-FTP-02 — Battery Langdon", checked: false },
+                        { id: "obs_ftp_3", name: "OBS-FTP-03 — Gulf Shore", checked: false }
+                    ]
+                },
+                {
+                    id: "slr40",
+                    label: "SLR 40cm",
+                    color: "#4fa3e0",
+                    layers: [
+                        { id: "slr40_ftp_flood", name: "Pickens Flood Extent 40cm", badge: "40cm", checked: false },
+                        { id: "slr40_ftp_inun", name: "Pickens Inundation 40cm", badge: "40cm", checked: false }
+                    ]
+                },
+                {
+                    id: "slr70",
+                    label: "SLR 70cm",
+                    color: "#e07c4f",
+                    layers: [
+                        { id: "slr70_ftp_flood", name: "Pickens Flood Extent 70cm", badge: "70cm", checked: false },
+                        { id: "slr70_ftp_inun", name: "Pickens Inundation 70cm", badge: "70cm", checked: false }
+                    ]
+                },
+                {
+                    id: "landuse",
+                    label: "Land Use",
+                    color: "#a78bfa",
+                    layers: [
+                        { id: "lu_ftp_park", name: "NPS Boundary & Land Use", checked: false },
+                        { id: "lu_ftp_veg", name: "Vegetation Classification", checked: false }
+                    ]
+                },
+                {
+                    id: "viewsheds",
+                    label: "Viewsheds",
+                    color: "#f59e42",
+                    layers: [
+                        { id: "vs_ftp_1", name: "Viewshed — Fort Gate", checked: false },
+                        { id: "vs_ftp_2", name: "Viewshed — Battery Langdon", checked: false },
+                        { id: "vs_ftp_3", name: "Viewshed — Gulf Shore", checked: false }
+                    ]
+                },
+                {
+                    id: "validated_viewsheds",
+                    label: "Validated Viewsheds",
+                    color: "#34d399",
+                    layers: [
+                        { id: "vvs_ftp_1", name: "Validated VS — Fort Gate (360°)", badge: "✓", checked: true },
+                        { id: "vvs_ftp_2", name: "Validated VS — Battery Langdon", badge: "✓", checked: false }
+                    ]
+                }
+            ]
+        };
 
+        // ── Map setup ────────────────────────────────────────────────
+        const map = new Map({ basemap: "satellite" });
         const view = new MapView({
             container: "viewDiv",
             map: map,
@@ -60,6 +560,121 @@
             zoom: 14
         });
 
+        // ── Layer panel state ────────────────────────────────────────
+        let panelOpen = false;
+        let collapsedGroups = {};
+
+        const layerPanel = document.getElementById("layerPanel");
+        const layerPanelBody = document.getElementById("layerPanelBody");
+        const locationLabel = document.getElementById("locationLabel");
+        const layerToggleBtn = document.getElementById("layerToggleBtn");
+
+        layerToggleBtn.addEventListener("click", () => {
+            panelOpen = !panelOpen;
+            layerPanel.classList.toggle("hidden", !panelOpen);
+        });
+
+        // ── Render layer panel ───────────────────────────────────────
+        function renderLayerPanel(locationKey) {
+            const locConfig = locations[locationKey];
+            const groups = layerData[locationKey];
+
+            locationLabel.textContent = locConfig ? locConfig.label : "No location selected";
+
+            if (!groups || groups.length === 0) {
+                layerPanelBody.innerHTML = '<div class="no-layers">No layers available for this location</div>';
+                return;
+            }
+
+            layerPanelBody.innerHTML = "";
+
+            groups.forEach((group, gi) => {
+                const isCollapsed = collapsedGroups[group.id] ?? false;
+                const totalItems = group.layers.length;
+
+                // Group wrapper
+                const groupEl = document.createElement("div");
+                groupEl.className = "layer-group";
+
+                // Header
+                const headerEl = document.createElement("div");
+                headerEl.className = `group-header${isCollapsed ? " collapsed" : ""}`;
+                headerEl.innerHTML = `
+                    <svg class="group-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="4 6 8 10 12 6"/>
+                    </svg>
+                    <div class="group-dot" style="background:${group.color}"></div>
+                    <span class="group-title">${group.label}</span>
+                    <span class="group-count">${totalItems}</span>
+                `;
+
+                // Items container
+                const itemsEl = document.createElement("div");
+                itemsEl.className = `group-items${isCollapsed ? " collapsed" : ""}`;
+                // Measure natural height after insert
+                itemsEl.style.maxHeight = isCollapsed ? "0" : "600px";
+
+                group.layers.forEach(layer => {
+                    const rowEl = document.createElement("label");
+                    rowEl.className = "layer-row";
+                    rowEl.htmlFor = layer.id;
+
+                    const cb = document.createElement("input");
+                    cb.type = "checkbox";
+                    cb.id = layer.id;
+                    cb.checked = layer.checked ?? false;
+                    cb.addEventListener("change", () => {
+                        layer.checked = cb.checked;
+                        // TODO: toggle actual map layer visibility here
+                        console.log(`Layer "${layer.name}" → ${cb.checked ? "ON" : "OFF"}`);
+                    });
+
+                    const nameEl = document.createElement("span");
+                    nameEl.className = "layer-name";
+                    nameEl.textContent = layer.name;
+
+                    rowEl.appendChild(cb);
+                    rowEl.appendChild(nameEl);
+
+                    if (layer.badge) {
+                        const badgeEl = document.createElement("span");
+                        badgeEl.className = "layer-badge";
+                        const isCheck = layer.badge === "✓";
+                        badgeEl.style.cssText = `
+                            background: ${isCheck ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.07)"};
+                            color: ${isCheck ? "#34d399" : "rgba(255,255,255,0.4)"};
+                            border: 1px solid ${isCheck ? "rgba(52,211,153,0.3)" : "rgba(255,255,255,0.12)"};
+                        `;
+                        badgeEl.textContent = layer.badge;
+                        rowEl.appendChild(badgeEl);
+                    }
+
+                    itemsEl.appendChild(rowEl);
+                });
+
+                // Collapse toggle
+                headerEl.addEventListener("click", () => {
+                    const collapsed = !headerEl.classList.contains("collapsed");
+                    headerEl.classList.toggle("collapsed", collapsed);
+                    itemsEl.classList.toggle("collapsed", collapsed);
+                    itemsEl.style.maxHeight = collapsed ? "0" : "600px";
+                    collapsedGroups[group.id] = collapsed;
+                });
+
+                groupEl.appendChild(headerEl);
+                groupEl.appendChild(itemsEl);
+
+                if (gi < groups.length - 1) {
+                    const div = document.createElement("div");
+                    div.className = "group-divider";
+                    groupEl.appendChild(div);
+                }
+
+                layerPanelBody.appendChild(groupEl);
+            });
+        }
+
+        // ── Location select ──────────────────────────────────────────
         document.getElementById("locationSelect").addEventListener("change", function (e) {
             const selected = e.target.value;
             if (locations[selected]) {
@@ -67,6 +682,16 @@
                     center: locations[selected].center,
                     zoom: locations[selected].zoom
                 });
+                collapsedGroups = {}; // reset collapse state for new location
+                renderLayerPanel(selected);
+                // Auto-open panel on first location pick
+                if (!panelOpen) {
+                    panelOpen = true;
+                    layerPanel.classList.remove("hidden");
+                }
+            } else {
+                locationLabel.textContent = "No location selected";
+                layerPanelBody.innerHTML = '<div class="no-layers">Select a location to load layers</div>';
             }
         });
     </script>
