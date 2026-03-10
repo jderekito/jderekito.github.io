@@ -1,341 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
-    <title>ArcGIS JS SDK - Load Web Map</title>
-    <link rel="stylesheet"
-        href="https://js.arcgis.com/4.29/esri/themes/light/main.css">
-    <script
-        src="https://js.arcgis.com/4.29/"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArcGIS JS SDK - Basemap Viewer</title>
+
+    <!-- Set API key BEFORE loading the SDK -->
+    <script>
+        var esriConfig = {
+            apiKey: "AAPTxy8BH1VEsoebNVZXo8HurJJfSblLJIe_8rSwJUXo29Br4VITRFmQhcdF-HhMrMz450tmUGuM9ppX1qT156rvd5vlvHvif-5y5Ybl4LnL42vsnFRyudrBqLMdI_6SWUmbixFl1rjXoh-Z8qiJHMWE0FCU6KlAfh2EzEV9e0W_eWSZevrAUMycDCu8hhPgROCvXyB2udBrOFrPHH9O-3M6snJPDaGeN6GVbrrU_jFPzBXWx8MxctNb72LeGQDFohsLbY5sOhR4UeWrhl8T7tvrP5ic6r0RiNVt5NipU4bQBhst1gf7YXtrcLaFEpi5t_L6NB5XAFfI59jZKcrv6urLxVE7JxFHXcXMLGeE9z2pEaImv074IIuzvf1XvW6w4NUY-GeABI7BsYe7-PaVeX93xMMmxJ8r-xatJtGl_r90rlg.AT1_RgAPkDJo"
+        };
+    </script>
+
+    <!-- Load ArcGIS Maps SDK for JavaScript 5.0 from CDN -->
+    <script type="module" src="https://js.arcgis.com/5.0/"></script>
+
     <style>
-        html,
-        body,
-        #viewDiv {
+        html, body, #viewDiv {
             padding: 0;
             margin: 0;
             height: 100%;
             width: 100%;
         }
-        
-        .legend-container {
-            padding: 0;
-            background-color: transparent;
-        }
     </style>
 </head>
-
 <body>
-      <div style="position: absolute; top: 10px; left: 10px; z-index: 10; background: white; padding: 5px; border-radius: 4px;">
-      <label for="locationSelect">Go to location:</label>
-      <select id="locationSelect">
-        <option value="">--Select--</option>
-        <option value="mexbeach">Mexico Beach</option>
-        <option value="staugy">Saint Augustine</option>
-        
-      </select>
+    <div style="position: absolute; top: 10px; left: 10px; z-index: 10; background: white; padding: 5px; border-radius: 4px;">
+        <label for="locationSelect">Go to location:</label>
+        <select id="locationSelect">
+            <option value="">--Select--</option>
+            <option value="staugybeach">St. Augustine Beach</option>
+            <option value="staugyfort">St. Augustine Historic Fort (A1A)</option>
+            <option value="vilano">Vilano Beach (Blue House)</option>
+            <option value="ftpickens">Fort Pickens (360 Imagery Example)</option>
+        </select>
     </div>
     <div id="viewDiv"></div>
 
-  <script>
-require([
-  "esri/WebMap",
-  "esri/views/MapView",
-  "esri/config",
-  "esri/layers/GroupLayer",
-  "esri/layers/FeatureLayer",
-  "esri/widgets/LayerList",
-  "esri/layers/ImageryTileLayer",
-  "esri/Map",
-  "esri/widgets/Legend",
-  "esri/widgets/Expand"
-], function (WebMap, MapView, esriConfig, GroupLayer, FeatureLayer, LayerList, ImageryTileLayer, Map, Legend, Expand) {
+    <script type="module">
+        const [Map, MapView] = await $arcgis.import([
+            "@arcgis/core/Map.js",
+            "@arcgis/core/views/MapView.js"
+        ]);
 
-  // Set your API key if needed
-  esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurJJfSblLJIe_8rSwJUXo29Br4VITRFmQhcdF-HhMrMz450tmUGuM9ppX1qT156rvd5vlvHvif-5y5Ybl4LnL42vsnFRyudrBqLMdI_6SWUmbixFl1rjXoh-Z8qiJHMWE0FCU6KlAfh2EzEV9e0W_eWSZevrAUMycDCu8hhPgROCvXyB2udBrOFrPHH9O-3M6snJPDaGeN6GVbrrU_jFPzBXWx8MxctNb72LeGQDFohsLbY5sOhR4UeWrhl8T7tvrP5ic6r0RiNVt5NipU4bQBhst1gf7YXtrcLaFEpi5t_L6NB5XAFfI59jZKcrv6urLxVE7JxFHXcXMLGeE9z2pEaImv074IIuzvf1XvW6w4NUY-GeABI7BsYe7-PaVeX93xMMmxJ8r-xatJtGl_r90rlg.AT1_RgAPkDJo";
-  
-  
-  // Coordinates for predefined locations
-  const locations = {
-    mexbeach: {
-      center: [-85.40932, 29.94166],
-      zoom: 13
-    },
-    staugy: {
-      center: [-81.31671, 29.89601],
-      zoom: 13
-    }
-  };
-
-  // Add dropdown zoom functionality
-  document.getElementById("locationSelect").addEventListener("change", function (e) {
-    const selected = e.target.value;
-    if (locations[selected]) {
-      view.goTo({
-        center: locations[selected].center,
-        zoom: locations[selected].zoom
-      });
-    }
-  });
-
-  // Create ImageryTileLayers
-  const MB_Viewshed00 = new ImageryTileLayer({
-    url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/_MB_Transect00_/ImageServer",
-    title: "MB_Viewshed00", 
-    visible: false  // 👈 Make this layer off by default
-  });
-  
-  const MB_Viewshed01 = new ImageryTileLayer({
-    url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/_MB_Transect01_/ImageServer",
-    title: "MB_Viewshed01", 
-    visible: false  // 👈 Make this layer off by default
-  });
-  
-  const MB_Viewshed02 = new ImageryTileLayer({
-    url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/_MB_Transect02_/ImageServer",
-    title: "MB_Viewshed02", 
-    visible: false  // 👈 Make this layer off by default
-  });  
-
-  const MB_Viewshed03 = new ImageryTileLayer({
-    url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/_MB_Transect03_/ImageServer",
-    title: "MB_Viewshed03", 
-    visible: false  // 👈 Make this layer off by default
-  });
-  
-  const MB_Viewshed04 = new ImageryTileLayer({
-    url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/_MB_Transect04_/ImageServer",
-    title: "MB_Viewshed04",
-    visible: false  // 👈 Make this layer off by default
-  });
-  
- const MB_Viewshed10 = new ImageryTileLayer({
-    url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/_MB_Transect10_/ImageServer",
-    title: "MB_Viewshed10", 
-    visible: false  // 👈 Make this layer off by default
-  });
-  
-  const MB_Viewshed11 = new ImageryTileLayer({
-    url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/_MB_Transect11_/ImageServer",
-    title: "MB_Viewshed11", 
-    visible: false  // 👈 Make this layer off by default
-  });
-  
-  const MB_Viewshed12 = new ImageryTileLayer({
-    url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/_MB_Transect12_/ImageServer",
-    title: "MB_Viewshed12", 
-    visible: false  // 👈 Make this layer off by default
-  });  
-
-  const MB_Viewshed13 = new ImageryTileLayer({
-    url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/_MB_Transect13_/ImageServer",
-    title: "MB_Viewshed13", 
-    visible: false  // 👈 Make this layer off by default
-  });
-  
-  const MB_Viewshed14 = new ImageryTileLayer({
-    url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/_MB_Transect14_/ImageServer",
-    title: "MB_Viewshed14",
-    visible: false  // 👈 Make this layer off by default
-  });  
-
-  const MB_LULC_T0 = new FeatureLayer({
-    url: "https://services.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/MB_LULC_T0/FeatureServer",
-    title: "MB_LULC_T0", 
-    popupTemplate: popupTemplate, 
-    visible: false  // 👈 Make this layer off by default
-  });  
-  
-  const MB_LULC_T1 = new FeatureLayer({
-    url: "https://services.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/MB_LULC_T1/FeatureServer",
-    title: "MB_LULC_T1", 
-    popupTemplate: popupTemplate, 
-    visible: false  // 👈 Make this layer off by default
-  }); 
-
-  const MB_T0 = new FeatureLayer({
-    url: "https://services.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/MB_Transect0/FeatureServer",
-    title: "MB_T0", 
-    popupTemplate: popupTemplate
-  }); 
-  
-  const MB_T1 = new FeatureLayer({
-    url: "https://services.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/MB_Transect1/FeatureServer",
-    title: "MB_T1", 
-    popupTemplate: popupTemplate
-  }); 
-  
-  const MB_OID_T0 = new FeatureLayer({
-    url: "https://services.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/MB_OID_T0/FeatureServer",
-    title: "MB_OID_T0", 
-    popupTemplate: popupTemplate
-  });  
-  
-  const MB_OID_T1 = new FeatureLayer({
-    url: "https://services.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/MB_OID_T1/FeatureServer",
-    title: "MB_OID_T1", 
-    popupTemplate: popupTemplate
-  });  
-  
-
-  // Create an Imagery GroupLayer
-  const imageryGroup = new GroupLayer({
-    title: "Imagery Layers",
-    layers: [MB_Viewshed00, MB_Viewshed01, MB_Viewshed02, MB_Viewshed03, MB_Viewshed04, MB_Viewshed10, MB_Viewshed11, MB_Viewshed12, MB_Viewshed13, MB_Viewshed14],
-    visibilityMode: "independent" // Allows toggling layers individually
-  });
-
-  // Create a Feature GroupLayer
-  const featureGroup = new GroupLayer({
-    title: "Feature Layers",
-    layers: [MB_LULC_T1, MB_LULC_T0, MB_T1, MB_T0, MB_OID_T1, MB_OID_T0],
-    visibilityMode: "independent"
-  });
-
-  // Create the map and add group layers
-  const map = new Map({
-    basemap: "topo-vector",
-    layers: [featureGroup, imageryGroup] 
-  });
-
-  // Create a MapView
-  const view = new MapView({
-    container: "viewDiv",
-    map: map,
-    center: [-85.416180, 29.948052], 
-    zoom: 16
-  });
-
-  // Create a LayerList widget and add it to the UI
-  const layerList = new LayerList({
-    view: view,
-    listItemCreatedFunction: function(event) {
-      const item = event.item;
-      if (item.layer.type === "group") {
-        item.open = false; // Expand groups by default
-      }
-      // Add the "Zoom to layer" action to all layers
-      item.actionsSections = [[{
-        title: "Zoom to layer",
-        className: "esri-icon-zoom-out-fixed",
-        id: "zoom-to-layer"
-      }]]; 
-      // Only add opacity slider for ImageryTileLayer
-      if (item.layer.type === "imagery-tile") {
-        // Create a slider to adjust opacity
-        item.panel = {
-          content: "opacity-slider",
-          open: false
+        const locations = {
+            staugybeach: { center: [-81.26540, 29.85680], zoom: 15 },
+            staugyfort:  { center: [-81.31180, 29.89810], zoom: 16 },
+            vilano:      { center: [-81.29850, 29.92640], zoom: 15 },
+            ftpickens:   { center: [-87.290411, 30.327058], zoom: 15 }
         };
 
-        // Create opacity slider with current layer opacity value
-        const opacitySlider = document.createElement("input");
-        opacitySlider.type = "range";
-        opacitySlider.min = 0;
-        opacitySlider.max = 1;
-        opacitySlider.step = 0.01;
-        opacitySlider.value = item.layer.opacity;
-        opacitySlider.style.width = "100%";
-
-        // Create a container for the slider with a label
-        const container = document.createElement("div");
-        container.className = "esri-widget";
-        container.style.padding = "0 15px";
-
-        const label = document.createElement("div");
-        label.textContent = "Layer Opacity:";
-        label.style.paddingBottom = "5px";
-
-        container.appendChild(label);
-        container.appendChild(opacitySlider);
-
-        // Change layer opacity based on slider value
-        opacitySlider.addEventListener("input", function(event) {
-          item.layer.opacity = event.target.value;
+        const map = new Map({
+            basemap: "satellite"
         });
-        item.panel.content = container;
-      }
-    }
-  });
-  
-  //Add the action to the LayerList for zooming
-  layerList.on("trigger-action", function(event) {
-    if (event.action.id === "zoom-to-layer") {
-      const layer = event.item.layer;
-      view.goTo(layer.fullExtent);
-    }
-  });  
 
-  // Create a Legend widget
-  const legend = new Legend({
-    view: view,
-    layerInfos: [
-      {
-        layer: MB_OID_T0,
-        title: "MB_OID_T0"
-      },
-      {
-        layer: MB_LULC_T0,
-        title: "MB_LULC_T0"
-      },
-      {
-        layer: MB_LULC_T1,
-        title: "MB_LULC_T1"
-      }      
-    ],
-    style: {
-      type: "card",
-      layout: "side-by-side"
-    },
-    container: document.createElement("div"),
-    className: "esri-widget legend-container"
-  });
+        const view = new MapView({
+            container: "viewDiv",
+            map: map,
+            center: [-81.26540, 29.85680],
+            zoom: 14
+        });
 
-  // Create an Expand widget for the Legend
-  const legendExpand = new Expand({
-    view: view,
-    content: legend,
-    expandIconClass: "esri-icon-legend",
-    expanded: false,
-    group: "bottom-left",
-    mode: "floating",
-    expandTooltip: "Legend",
-    collapseTooltip: "Close Legend"
-  });
-
-  // Add LayerList to UI
-  view.ui.add(layerList, "bottom-right");
-  
-  // Add Legend to UI inside an Expand widget
-  view.ui.add(legendExpand, "bottom-left");
-
-});
-    
-    const popupTemplate = {
-      title: "{Name}",  // Replace with your desired title field
-      content: [
-        {
-          type: "media",
-          mediaInfos: [
-            {
-              type: "image",
-              caption: "Photo Capture",
-              // The "sourceURL" value uses curly braces to reference the attribute field that contains your image URL
-              value: {
-                sourceURL: "{ImagePath}?raw=true"  // Replace "ImagePath" with the actual field name containing the image URL
-              }
+        document.getElementById("locationSelect").addEventListener("change", function (e) {
+            const selected = e.target.value;
+            if (locations[selected]) {
+                view.goTo({
+                    center: locations[selected].center,
+                    zoom: locations[selected].zoom
+                });
             }
-          ]
-        },
-        {
-          type: "text",
-          text: "Acquisition Date: {AcquisitionDate}"
-        }
-      ]
-    };    
-
-  </script>
+        });
+    </script>
 </body>
-
 </html>
