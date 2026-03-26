@@ -4,266 +4,93 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArcGIS JS SDK - Basemap Viewer</title>
 
-    <script>
-        var esriConfig = {
-            apiKey: "AAPTxy8BH1VEsoebNVZXo8HurJJfSblLJIe_8rSwJUXo29Br4VITRFmQhcdF-HhMrMz450tmUGuM9ppX1qT156rvd5vlvHvif-5y5Ybl4LnL42vsnFRyudrBqLMdI_6SWUmbixFl1rjXoh-Z8qiJHMWE0FCU6KlAfh2EzEV9e0W_eWSZevrAUMycDCu8hhPgROCvXyB2udBrOFrPHH9O-3M6snJPDaGeN6GVbrrU_jFPzBXWx8MxctNb72LeGQDFohsLbY5sOhR4UeWrhl8T7tvrP5ic6r0RiNVt5NipU4bQBhst1gf7YXtrcLaFEpi5t_L6NB5XAFfI59jZKcrv6urLxVE7JxFHXcXMLGeE9z2pEaImv074IIuzvf1XvW6w4NUY-GeABI7BsYe7-PaVeX93xMMmxJ8r-xatJtGl_r90rlg.AT1_RgAPkDJo"
-        };
-    </script>
+
     <script type="module" src="https://js.arcgis.com/5.0/"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; }
+        html, body, #viewDiv { padding: 0; margin: 0; height: 100%; width: 100%; font-family: 'Syne', sans-serif; }
 
-        html, body, #viewDiv {
-            padding: 0;
-            margin: 0;
-            height: 100%;
-            width: 100%;
-            font-family: 'Syne', sans-serif;
-        }
-
-        /* ── Top bar ── */
         #topBar {
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            z-index: 20;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 16px;
-            background: rgba(10, 14, 20, 0.88);
-            backdrop-filter: blur(10px);
+            position: absolute; top: 0; left: 0; right: 0; z-index: 20;
+            display: flex; align-items: center; gap: 12px; padding: 10px 16px;
+            background: rgba(10,14,20,0.88); backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255,255,255,0.08);
         }
-
-        #topBar label {
-            color: rgba(255,255,255,0.55);
-            font-size: 11px;
-            font-family: 'DM Mono', monospace;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
+        #topBar label { color: rgba(255,255,255,0.55); font-size: 11px; font-family: 'DM Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
 
         #locationSelect {
-            font-family: 'Syne', sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-            color: #fff;
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 6px;
-            padding: 6px 10px;
-            cursor: pointer;
-            outline: none;
-            transition: border-color 0.2s;
-            min-width: 240px;
+            font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: #fff;
+            background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px; padding: 6px 10px; cursor: pointer; outline: none;
+            transition: border-color 0.2s; min-width: 240px;
         }
         #locationSelect:hover { border-color: rgba(99,202,183,0.6); }
         #locationSelect option { background: #1a1f2b; color: #fff; }
 
-        /* ── Layer Panel Toggle Button ── */
         #layerToggleBtn {
-            margin-left: auto;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            padding: 6px 13px;
-            background: rgba(99,202,183,0.12);
-            border: 1px solid rgba(99,202,183,0.35);
-            border-radius: 6px;
-            color: #63cab7;
-            font-family: 'DM Mono', monospace;
-            font-size: 11px;
-            letter-spacing: 0.07em;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: background 0.2s, border-color 0.2s;
-            white-space: nowrap;
+            margin-left: auto; display: flex; align-items: center; gap: 7px;
+            padding: 6px 13px; background: rgba(99,202,183,0.12);
+            border: 1px solid rgba(99,202,183,0.35); border-radius: 6px;
+            color: #63cab7; font-family: 'DM Mono', monospace; font-size: 11px;
+            letter-spacing: 0.07em; text-transform: uppercase; cursor: pointer;
+            transition: background 0.2s, border-color 0.2s; white-space: nowrap;
         }
         #layerToggleBtn:hover { background: rgba(99,202,183,0.22); border-color: rgba(99,202,183,0.6); }
-        #layerToggleBtn svg { flex-shrink: 0; }
 
-        /* ── Layer Panel ── */
         #layerPanel {
-            position: absolute;
-            top: 52px;
-            right: 16px;
-            z-index: 15;
-            width: 270px;
-            background: rgba(10, 14, 20, 0.92);
-            backdrop-filter: blur(14px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-            transform-origin: top right;
-            transition: opacity 0.22s ease, transform 0.22s ease;
+            position: absolute; top: 52px; right: 16px; z-index: 15; width: 270px;
+            background: rgba(10,14,20,0.92); backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+            overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            transform-origin: top right; transition: opacity 0.22s ease, transform 0.22s ease;
         }
-        #layerPanel.hidden {
-            opacity: 0;
-            pointer-events: none;
-            transform: scale(0.96) translateY(-6px);
-        }
+        #layerPanel.hidden { opacity: 0; pointer-events: none; transform: scale(0.96) translateY(-6px); }
 
         #layerPanelHeader {
-            padding: 12px 14px 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            padding: 12px 14px 10px; border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex; align-items: center; justify-content: space-between;
         }
-        #layerPanelHeader span {
-            font-size: 11px;
-            font-family: 'DM Mono', monospace;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.45);
-        }
-        #locationLabel {
-            font-size: 12px;
-            font-weight: 600;
-            color: #63cab7;
-            font-family: 'Syne', sans-serif;
-            letter-spacing: 0;
-            text-transform: none;
-        }
+        #layerPanelHeader span { font-size: 11px; font-family: 'DM Mono', monospace; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+        #locationLabel { font-size: 12px; font-weight: 600; color: #63cab7; font-family: 'Syne', sans-serif; letter-spacing: 0; text-transform: none; }
 
-        #layerPanelBody {
-            padding: 8px 0 10px;
-            max-height: calc(100vh - 120px);
-            overflow-y: auto;
-        }
+        #layerPanelBody { padding: 8px 0 10px; max-height: calc(100vh - 120px); overflow-y: auto; }
         #layerPanelBody::-webkit-scrollbar { width: 4px; }
         #layerPanelBody::-webkit-scrollbar-track { background: transparent; }
         #layerPanelBody::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
 
-        /* ── Groups ── */
         .layer-group { margin-bottom: 4px; }
-
-        .group-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 7px 14px;
-            cursor: pointer;
-            user-select: none;
-            transition: background 0.15s;
-        }
+        .group-header { display: flex; align-items: center; gap: 8px; padding: 7px 14px; cursor: pointer; user-select: none; transition: background 0.15s; }
         .group-header:hover { background: rgba(255,255,255,0.04); }
-
-        .group-chevron {
-            width: 14px;
-            height: 14px;
-            color: rgba(255,255,255,0.3);
-            flex-shrink: 0;
-            transition: transform 0.2s;
-        }
+        .group-chevron { width: 14px; height: 14px; color: rgba(255,255,255,0.3); flex-shrink: 0; transition: transform 0.2s; }
         .group-header.collapsed .group-chevron { transform: rotate(-90deg); }
-
-        .group-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .group-title {
-            font-size: 11px;
-            font-family: 'DM Mono', monospace;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.65);
-            flex: 1;
-        }
-
-        .group-count {
-            font-size: 10px;
-            font-family: 'DM Mono', monospace;
-            color: rgba(255,255,255,0.25);
-        }
-
-        .group-items {
-            overflow: hidden;
-            transition: max-height 0.25s ease;
-        }
+        .group-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .group-title { font-size: 11px; font-family: 'DM Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.65); flex: 1; }
+        .group-count { font-size: 10px; font-family: 'DM Mono', monospace; color: rgba(255,255,255,0.25); }
+        .group-items { overflow: hidden; transition: max-height 0.25s ease; }
         .group-items.collapsed { max-height: 0 !important; }
 
-        /* ── Layer Row ── */
-        .layer-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 5px 14px 5px 36px;
-            transition: background 0.12s;
-            cursor: pointer;
-        }
+        .layer-row { display: flex; align-items: center; gap: 10px; padding: 5px 14px 5px 36px; transition: background 0.12s; cursor: pointer; }
         .layer-row:hover { background: rgba(255,255,255,0.04); }
-
         .layer-row input[type="checkbox"] {
-            appearance: none;
-            -webkit-appearance: none;
-            width: 14px;
-            height: 14px;
-            border: 1.5px solid rgba(255,255,255,0.25);
-            border-radius: 3px;
-            flex-shrink: 0;
-            cursor: pointer;
-            position: relative;
+            appearance: none; -webkit-appearance: none; width: 14px; height: 14px;
+            border: 1.5px solid rgba(255,255,255,0.25); border-radius: 3px;
+            flex-shrink: 0; cursor: pointer; position: relative;
             transition: background 0.15s, border-color 0.15s;
         }
-        .layer-row input[type="checkbox"]:checked {
-            background: #63cab7;
-            border-color: #63cab7;
-        }
+        .layer-row input[type="checkbox"]:checked { background: #63cab7; border-color: #63cab7; }
         .layer-row input[type="checkbox"]:checked::after {
-            content: '';
-            position: absolute;
-            left: 3px; top: 1px;
-            width: 5px; height: 8px;
-            border: 1.5px solid #0a0e14;
-            border-top: none; border-left: none;
-            transform: rotate(45deg);
+            content: ''; position: absolute; left: 3px; top: 1px; width: 5px; height: 8px;
+            border: 1.5px solid #0a0e14; border-top: none; border-left: none; transform: rotate(45deg);
         }
-
-        .layer-name {
-            font-size: 12px;
-            font-weight: 400;
-            color: rgba(255,255,255,0.75);
-            flex: 1;
-            line-height: 1.3;
-        }
-
-        .layer-badge {
-            font-size: 9px;
-            font-family: 'DM Mono', monospace;
-            letter-spacing: 0.05em;
-            padding: 2px 5px;
-            border-radius: 3px;
-            flex-shrink: 0;
-        }
-
-        /* ── No layers state ── */
-        .no-layers {
-            padding: 18px 14px;
-            text-align: center;
-            color: rgba(255,255,255,0.25);
-            font-size: 11px;
-            font-family: 'DM Mono', monospace;
-            letter-spacing: 0.06em;
-        }
-
-        /* ── Divider ── */
-        .group-divider {
-            height: 1px;
-            background: rgba(255,255,255,0.05);
-            margin: 2px 14px;
-        }
+        .layer-name { font-size: 12px; font-weight: 400; color: rgba(255,255,255,0.75); flex: 1; line-height: 1.3; }
+        .layer-badge { font-size: 9px; font-family: 'DM Mono', monospace; letter-spacing: 0.05em; padding: 2px 5px; border-radius: 3px; flex-shrink: 0; }
+        .no-layers { padding: 18px 14px; text-align: center; color: rgba(255,255,255,0.25); font-size: 11px; font-family: 'DM Mono', monospace; letter-spacing: 0.06em; }
+        .group-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 2px 14px; }
     </style>
 </head>
 <body>
-    <!-- Top Bar -->
     <div id="topBar">
         <label for="locationSelect">Location</label>
         <select id="locationSelect">
@@ -273,7 +100,6 @@
             <option value="vilano">Vilano Beach (Blue House)</option>
             <option value="ftpickens">Fort Pickens (360 Imagery Example)</option>
         </select>
-
         <button id="layerToggleBtn" title="Toggle layer panel">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
                 <rect x="1" y="2" width="14" height="3" rx="1"/>
@@ -284,7 +110,6 @@
         </button>
     </div>
 
-    <!-- Layer Panel -->
     <div id="layerPanel" class="hidden">
         <div id="layerPanelHeader">
             <span>Layer Picker</span>
@@ -298,370 +123,170 @@
     <div id="viewDiv"></div>
 
     <script type="module">
-        const [Map, MapView, GraphicsLayer, Graphic, Point] = await $arcgis.import([
+        const [Map, MapView, GraphicsLayer, Graphic, Point, ImageryTileLayer, TileLayer] = await $arcgis.import([
             "@arcgis/core/Map.js",
             "@arcgis/core/views/MapView.js",
             "@arcgis/core/layers/GraphicsLayer.js",
             "@arcgis/core/Graphic.js",
-            "@arcgis/core/geometry/Point.js"
+            "@arcgis/core/geometry/Point.js",
+            "@arcgis/core/layers/ImageryTileLayer.js",
+            "@arcgis/core/layers/TileLayer.js"
         ]);
 
-        // ── Location config ──────────────────────────────────────────
-        const locations = {
-            staugybeach: {
-                label: "St. Augustine Beach",
-                center: [-81.26540, 29.85680],
-                zoom: 15
-            },
-            staugyfort: {
-                label: "St. Augustine Historic Fort",
-                center: [-81.31180, 29.89810],
-                zoom: 16
-            },
-            vilano: {
-                label: "Vilano Beach (Blue House)",
-                center: [-81.298978, 29.936989],
-                zoom: 17
-            },
-            ftpickens: {
-                label: "Fort Pickens",
-                center: [-87.290411, 30.327058],
-                zoom: 15
-            }
+        // ── Layer defs: direct URLs — layers shared publicly, no auth needed ──
+        const SLR_LAYERS = [
+            { id: "int_high_2040", name: "Intermediate High 2040", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/IntHigh_2040/ImageServer", badge: "2040", badgeStyle: "slr-high" },
+            { id: "int_low_2040",  name: "Intermediate Low 2040",  url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/IntLow_2040/ImageServer",  badge: "2040", badgeStyle: "slr-low"  },
+            { id: "int_high_2070", name: "Intermediate High 2070", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/IntHigh_2070/ImageServer", badge: "2070", badgeStyle: "slr-high" },
+            { id: "int_low_2070",  name: "Intermediate Low 2070",  url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/IntLow_2070/ImageServer",  badge: "2070", badgeStyle: "slr-low"  },
+            { id: "int_high_2100", name: "Intermediate High 2100", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/IntHigh_2100/ImageServer", badge: "2100", badgeStyle: "slr-high" },
+            { id: "int_low_2100",  name: "Intermediate Low 2100",  url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/IntLow_2100/ImageServer",  badge: "2100", badgeStyle: "slr-low"  }
+        ];
+
+        const LULC_LAYER = {
+            id: "lulc_study", name: "LULC Study Area",
+            url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/LULC_StudyArea/ImageServer",
+            badge: "LULC", badgeStyle: "lulc"
         };
 
-        // ── Layer definitions per location ───────────────────────────
-        // Each group: { id, label, color, layers: [{id, name, badge?, checked?}] }
+        // ── Location config ───────────────────────────────────────────
+        const locations = {
+            staugybeach: { label: "St. Augustine Beach",         center: [-81.26540, 29.85680],   zoom: 15 },
+            staugyfort:  { label: "St. Augustine Historic Fort", center: [-81.31180, 29.89810],   zoom: 16 },
+            vilano:      { label: "Vilano Beach (Blue House)",   center: [-81.298978, 29.936989], zoom: 17 },
+            ftpickens:   { label: "Fort Pickens",                center: [-87.290411, 30.327058], zoom: 15 }
+        };
+
+        // ── Layer definitions per location ────────────────────────────
         const layerData = {
             staugybeach: [
                 {
-                    id: "obs_points",
-                    label: "Observation Points",
-                    color: "#63cab7",
+                    id: "validated_viewsheds", label: "Validated Viewsheds", color: "#34d399",
                     layers: [
-                        { id: "obs_sab_1", name: "OBS-SAB-01 — Main Access", checked: true },
-                        { id: "obs_sab_2", name: "OBS-SAB-02 — North End", checked: false },
-                        { id: "obs_sab_3", name: "OBS-SAB-03 — South End", checked: false }
+                        { id: "vvs_sab_00", name: "Validated VS — OBS-SAB-00", badge: "✓", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/SAB_00_Viewshed_Validated/ImageServer", checked: false },
+                        { id: "vvs_sab_04", name: "Validated VS — OBS-SAB-04", badge: "✓", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/SAB_04_Viewshed_Validated/ImageServer", checked: false }
                     ]
                 },
-                {
-                    id: "slr40",
-                    label: "SLR 40cm",
-                    color: "#4fa3e0",
-                    layers: [
-                        { id: "slr40_sab_flood", name: "SAB Flood Extent 40cm", badge: "40cm", checked: false },
-                        { id: "slr40_sab_depth", name: "SAB Depth Grid 40cm", badge: "40cm", checked: false }
-                    ]
-                },
-                {
-                    id: "slr70",
-                    label: "SLR 70cm",
-                    color: "#e07c4f",
-                    layers: [
-                        { id: "slr70_sab_flood", name: "SAB Flood Extent 70cm", badge: "70cm", checked: false },
-                        { id: "slr70_sab_depth", name: "SAB Depth Grid 70cm", badge: "70cm", checked: false }
-                    ]
-                },
-                {
-                    id: "landuse",
-                    label: "Land Use",
-                    color: "#a78bfa",
-                    layers: [
-                        { id: "lu_sab_2024", name: "SAB Land Use 2024", checked: false },
-                        { id: "lu_sab_zoning", name: "SAB Zoning Districts", checked: false }
-                    ]
-                },
-                {
-                    id: "viewsheds",
-                    label: "Viewsheds",
-                    color: "#f59e42",
-                    layers: [
-                        { id: "vs_sab_1", name: "Viewshed — OBS-SAB-01", checked: false },
-                        { id: "vs_sab_2", name: "Viewshed — OBS-SAB-02", checked: false }
-                    ]
-                },
-                {
-                    id: "validated_viewsheds",
-                    label: "Validated Viewsheds",
-                    color: "#34d399",
-                    layers: [
-                        { id: "vvs_sab_1", name: "Validated VS — OBS-SAB-01", badge: "✓", checked: false }
-                    ]
-                }
+                { id: "slr",     label: "Sea Level Rise",        color: "#4fa3e0", layers: SLR_LAYERS.map(l => ({ ...l, checked: false })) },
+                { id: "landuse", label: "Land Use / Land Cover", color: "#a78bfa", layers: [{ ...LULC_LAYER, checked: false }] }
             ],
             staugyfort: [
-                {
-                    id: "obs_points",
-                    label: "Observation Points",
-                    color: "#63cab7",
-                    layers: [
-                        { id: "obs_fort_1", name: "OBS-FORT-01 — Castillo Entrance", checked: true },
-                        { id: "obs_fort_2", name: "OBS-FORT-02 — Seawall", checked: false }
-                    ]
-                },
-                {
-                    id: "slr40",
-                    label: "SLR 40cm",
-                    color: "#4fa3e0",
-                    layers: [
-                        { id: "slr40_fort_flood", name: "Fort Flood Extent 40cm", badge: "40cm", checked: false }
-                    ]
-                },
-                {
-                    id: "slr70",
-                    label: "SLR 70cm",
-                    color: "#e07c4f",
-                    layers: [
-                        { id: "slr70_fort_flood", name: "Fort Flood Extent 70cm", badge: "70cm", checked: false }
-                    ]
-                },
-                {
-                    id: "landuse",
-                    label: "Land Use",
-                    color: "#a78bfa",
-                    layers: [
-                        { id: "lu_fort_hist", name: "Historic District Land Use", checked: false },
-                        { id: "lu_fort_zone", name: "A1A Corridor Zoning", checked: false }
-                    ]
-                },
-                {
-                    id: "viewsheds",
-                    label: "Viewsheds",
-                    color: "#f59e42",
-                    layers: [
-                        { id: "vs_fort_1", name: "Viewshed — Castillo Entrance", checked: false },
-                        { id: "vs_fort_2", name: "Viewshed — Seawall", checked: false }
-                    ]
-                },
-                {
-                    id: "validated_viewsheds",
-                    label: "Validated Viewsheds",
-                    color: "#34d399",
-                    layers: [
-                        { id: "vvs_fort_1", name: "Validated VS — Castillo", badge: "✓", checked: false },
-                        { id: "vvs_fort_2", name: "Validated VS — Seawall", badge: "✓", checked: false }
-                    ]
-                }
+                { id: "slr",     label: "Sea Level Rise",        color: "#4fa3e0", layers: SLR_LAYERS.map(l => ({ ...l, checked: false })) },
+                { id: "landuse", label: "Land Use / Land Cover", color: "#a78bfa", layers: [{ ...LULC_LAYER, checked: false }] }
             ],
             vilano: [
                 {
-                    id: "obs_points",
-                    label: "Observation Points",
-                    color: "#63cab7",
+                    id: "validated_viewsheds", label: "Validated Viewsheds", color: "#34d399",
                     layers: [
-                        { id: "obs_vil_1", name: "OBS-VIL-01 — Blue House", checked: true },
-                        { id: "obs_vil_2", name: "OBS-VIL-02 — Beach Access", checked: false }
+                        { id: "vvs_vb_00", name: "Validated VS — OBS-VB-00", badge: "✓", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/VB_00_Viewshed_Validated/ImageServer", checked: false },
+                        { id: "vvs_vb_04", name: "Validated VS — OBS-VB-04", badge: "✓", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/VB_04_Viewshed_Validate_Clip/ImageServer", checked: false }
                     ]
                 },
-                {
-                    id: "slr40",
-                    label: "SLR 40cm",
-                    color: "#4fa3e0",
-                    layers: [
-                        { id: "slr40_vil", name: "Vilano Flood Extent 40cm", badge: "40cm", checked: false }
-                    ]
-                },
-                {
-                    id: "slr70",
-                    label: "SLR 70cm",
-                    color: "#e07c4f",
-                    layers: [
-                        { id: "slr70_vil", name: "Vilano Flood Extent 70cm", badge: "70cm", checked: false }
-                    ]
-                },
-                {
-                    id: "landuse",
-                    label: "Land Use",
-                    color: "#a78bfa",
-                    layers: [
-                        { id: "lu_vil_res", name: "Residential Land Use", checked: false }
-                    ]
-                },
-                {
-                    id: "viewsheds",
-                    label: "Viewsheds",
-                    color: "#f59e42",
-                    layers: [
-                        { id: "vs_vil_1", name: "Viewshed — Blue House", checked: false }
-                    ]
-                },
-                {
-                    id: "validated_viewsheds",
-                    label: "Validated Viewsheds",
-                    color: "#34d399",
-                    layers: [
-                        { id: "vvs_vil_1", name: "Validated VS — Blue House", badge: "✓", checked: false }
-                    ]
-                }
+                { id: "slr",     label: "Sea Level Rise",        color: "#4fa3e0", layers: SLR_LAYERS.map(l => ({ ...l, checked: false })) },
+                { id: "landuse", label: "Land Use / Land Cover", color: "#a78bfa", layers: [{ ...LULC_LAYER, checked: false }] }
             ],
             ftpickens: [
-                {
-                    id: "obs_points",
-                    label: "Observation Points",
-                    color: "#63cab7",
-                    layers: [
-                        { id: "obs_ftp_1", name: "OBS-FTP-01 — Fort Gate", checked: true },
-                        { id: "obs_ftp_2", name: "OBS-FTP-02 — Battery Langdon", checked: false },
-                        { id: "obs_ftp_3", name: "OBS-FTP-03 — Gulf Shore", checked: false }
-                    ]
-                },
-                {
-                    id: "slr40",
-                    label: "SLR 40cm",
-                    color: "#4fa3e0",
-                    layers: [
-                        { id: "slr40_ftp_flood", name: "Pickens Flood Extent 40cm", badge: "40cm", checked: false },
-                        { id: "slr40_ftp_inun", name: "Pickens Inundation 40cm", badge: "40cm", checked: false }
-                    ]
-                },
-                {
-                    id: "slr70",
-                    label: "SLR 70cm",
-                    color: "#e07c4f",
-                    layers: [
-                        { id: "slr70_ftp_flood", name: "Pickens Flood Extent 70cm", badge: "70cm", checked: false },
-                        { id: "slr70_ftp_inun", name: "Pickens Inundation 70cm", badge: "70cm", checked: false }
-                    ]
-                },
-                {
-                    id: "landuse",
-                    label: "Land Use",
-                    color: "#a78bfa",
-                    layers: [
-                        { id: "lu_ftp_park", name: "NPS Boundary & Land Use", checked: false },
-                        { id: "lu_ftp_veg", name: "Vegetation Classification", checked: false }
-                    ]
-                },
-                {
-                    id: "viewsheds",
-                    label: "Viewsheds",
-                    color: "#f59e42",
-                    layers: [
-                        { id: "vs_ftp_1", name: "Viewshed — Fort Gate", checked: false },
-                        { id: "vs_ftp_2", name: "Viewshed — Battery Langdon", checked: false },
-                        { id: "vs_ftp_3", name: "Viewshed — Gulf Shore", checked: false }
-                    ]
-                },
-                {
-                    id: "validated_viewsheds",
-                    label: "Validated Viewsheds",
-                    color: "#34d399",
-                    layers: [
-                        { id: "vvs_ftp_1", name: "Validated VS — Fort Gate (360°)", badge: "✓", checked: true },
-                        { id: "vvs_ftp_2", name: "Validated VS — Battery Langdon", badge: "✓", checked: false }
-                    ]
-                }
+                { id: "slr",     label: "Sea Level Rise",        color: "#4fa3e0", layers: SLR_LAYERS.map(l => ({ ...l, checked: false })) },
+                { id: "landuse", label: "Land Use / Land Cover", color: "#a78bfa", layers: [{ ...LULC_LAYER, checked: false }] }
             ]
         };
 
-        // ── Map setup ────────────────────────────────────────────────
+        // ── Map setup ─────────────────────────────────────────────────
         const graphicsLayer = new GraphicsLayer();
-        const map = new Map({ basemap: "satellite", layers: [graphicsLayer] });
-        const view = new MapView({
-            container: "viewDiv",
-            map: map,
-            center: [-81.26540, 29.85680],
-            zoom: 14
-        });
+        // Use OSM basemap — no API key required, works for public viewers
+        const map  = new Map({ basemap: "osm", layers: [graphicsLayer] });
+        const view = new MapView({ container: "viewDiv", map, center: [-81.26540, 29.85680], zoom: 14 });
 
-        // ── Blue House marker — 3560 Coastal Hwy, Saint Augustine FL ─
+        // ── Active layer cache ────────────────────────────────────────
+        const activeLayers = {};
+
+        function addImageLayer(layerDef) {
+            if (!layerDef.url || activeLayers[layerDef.id]) return;
+            const tileLayer = new ImageryTileLayer({ url: layerDef.url, opacity: 0.75 });
+            map.add(tileLayer);
+            activeLayers[layerDef.id] = tileLayer;
+        }
+
+        function removeImageLayer(layerId) {
+            if (activeLayers[layerId]) { map.remove(activeLayers[layerId]); delete activeLayers[layerId]; }
+        }
+
+        function removeAllImageLayers() {
+            Object.keys(activeLayers).forEach(id => { map.remove(activeLayers[id]); delete activeLayers[id]; });
+        }
+
+        // ── Blue House marker ─────────────────────────────────────────
         const blueHousePoint = new Point({ longitude: -81.298981, latitude: 29.936989 });
-
         const blueHouseSymbol = {
             type: "picture-marker",
             url: "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 48" width="40" height="48">
-                  <filter id="shadow">
-                    <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#00000066"/>
-                  </filter>
-                  <!-- Pin shape -->
+                  <filter id="shadow"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#00000066"/></filter>
                   <path d="M20 2 C10 2 2 10 2 20 C2 32 20 46 20 46 C20 46 38 32 38 20 C38 10 30 2 20 2Z"
                         fill="#1a6fcc" stroke="white" stroke-width="2" filter="url(#shadow)"/>
-                  <!-- House icon -->
                   <g transform="translate(20,19)" fill="white">
-                    <!-- Roof -->
-                    <polygon points="-9,0 0,-8 9,0" />
-                    <!-- Body -->
-                    <rect x="-7" y="0" width="14" height="9" />
-                    <!-- Door -->
+                    <polygon points="-9,0 0,-8 9,0"/>
+                    <rect x="-7" y="0" width="14" height="9"/>
                     <rect x="-2.5" y="3" width="5" height="6" fill="#1a6fcc"/>
-                    <!-- Window left -->
                     <rect x="-6" y="1.5" width="3" height="3" fill="#1a6fcc"/>
-                    <!-- Window right -->
                     <rect x="3" y="1.5" width="3" height="3" fill="#1a6fcc"/>
                   </g>
                 </svg>
             `),
-            width: "28px",
-            height: "34px",
-            yoffset: "17px"
+            width: "28px", height: "34px", yoffset: "17px"
         };
-
         const blueHouseGraphic = new Graphic({
-            geometry: blueHousePoint,
-            symbol: blueHouseSymbol,
+            geometry: blueHousePoint, symbol: blueHouseSymbol,
             attributes: {
                 name: "3560 Coastal Hwy",
-                address: "3560 Coastal Hwy, Saint Augustine, FL 32084",
-                zillowUrl: "https://www.zillow.com/homedetails/3560-Coastal-Hwy-Saint-Augustine-FL-32084/66755750_zpid/?utm_campaign=zillowwebmessage&utm_medium=referral&utm_source=txtshare"
+                zillowUrl: "https://www.zillow.com/homedetails/3560-Coastal-Hwy-Saint-Augustine-FL-32084/66755750_zpid/"
             }
         });
-
         graphicsLayer.add(blueHouseGraphic);
 
-        // ── Open Zillow on icon click ─────────────────────────────────
         view.on("click", async (event) => {
             const response = await view.hitTest(event);
             const hit = response.results.find(r => r.graphic === blueHouseGraphic);
-            if (hit) {
-                window.open(hit.graphic.attributes.zillowUrl, "_blank");
-            }
+            if (hit) window.open(hit.graphic.attributes.zillowUrl, "_blank");
         });
-
-        // ── Pointer cursor on hover ───────────────────────────────────
         view.on("pointer-move", async (event) => {
             const response = await view.hitTest(event);
-            const hit = response.results.find(r => r.graphic === blueHouseGraphic);
-            view.cursor = hit ? "pointer" : "default";
+            view.cursor = response.results.find(r => r.graphic === blueHouseGraphic) ? "pointer" : "default";
         });
 
-        // ── Layer panel state ────────────────────────────────────────
+        // ── Layer panel state ─────────────────────────────────────────
         let panelOpen = false;
         let collapsedGroups = {};
-
-        const layerPanel = document.getElementById("layerPanel");
+        const layerPanel     = document.getElementById("layerPanel");
         const layerPanelBody = document.getElementById("layerPanelBody");
-        const locationLabel = document.getElementById("locationLabel");
-        const layerToggleBtn = document.getElementById("layerToggleBtn");
+        const locationLabel  = document.getElementById("locationLabel");
 
-        layerToggleBtn.addEventListener("click", () => {
+        document.getElementById("layerToggleBtn").addEventListener("click", () => {
             panelOpen = !panelOpen;
             layerPanel.classList.toggle("hidden", !panelOpen);
         });
 
-        // ── Render layer panel ───────────────────────────────────────
+        function getBadgeStyle(badgeStyle, badge) {
+            if (badge === "✓")             return "background:rgba(52,211,153,0.12);color:#34d399;border:1px solid rgba(52,211,153,0.3);";
+            if (badgeStyle === "slr-high") return "background:rgba(79,163,224,0.14);color:#4fa3e0;border:1px solid rgba(79,163,224,0.3);";
+            if (badgeStyle === "slr-low")  return "background:rgba(224,124,79,0.14);color:#e07c4f;border:1px solid rgba(224,124,79,0.3);";
+            if (badgeStyle === "lulc")     return "background:rgba(167,139,250,0.14);color:#a78bfa;border:1px solid rgba(167,139,250,0.3);";
+            return "background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.12);";
+        }
+
         function renderLayerPanel(locationKey) {
             const locConfig = locations[locationKey];
-            const groups = layerData[locationKey];
-
+            const groups    = layerData[locationKey];
             locationLabel.textContent = locConfig ? locConfig.label : "No location selected";
-
             if (!groups || groups.length === 0) {
-                layerPanelBody.innerHTML = '<div class="no-layers">No layers available for this location</div>';
+                layerPanelBody.innerHTML = '<div class="no-layers">No layers available</div>';
                 return;
             }
-
             layerPanelBody.innerHTML = "";
-
             groups.forEach((group, gi) => {
                 const isCollapsed = collapsedGroups[group.id] ?? false;
-                const totalItems = group.layers.length;
-
-                // Group wrapper
-                const groupEl = document.createElement("div");
+                const groupEl  = document.createElement("div");
                 groupEl.className = "layer-group";
-
-                // Header
                 const headerEl = document.createElement("div");
                 headerEl.className = `group-header${isCollapsed ? " collapsed" : ""}`;
                 headerEl.innerHTML = `
@@ -670,54 +295,37 @@
                     </svg>
                     <div class="group-dot" style="background:${group.color}"></div>
                     <span class="group-title">${group.label}</span>
-                    <span class="group-count">${totalItems}</span>
+                    <span class="group-count">${group.layers.length}</span>
                 `;
-
-                // Items container
                 const itemsEl = document.createElement("div");
                 itemsEl.className = `group-items${isCollapsed ? " collapsed" : ""}`;
-                // Measure natural height after insert
                 itemsEl.style.maxHeight = isCollapsed ? "0" : "600px";
 
                 group.layers.forEach(layer => {
                     const rowEl = document.createElement("label");
                     rowEl.className = "layer-row";
                     rowEl.htmlFor = layer.id;
-
                     const cb = document.createElement("input");
-                    cb.type = "checkbox";
-                    cb.id = layer.id;
-                    cb.checked = layer.checked ?? false;
+                    cb.type = "checkbox"; cb.id = layer.id; cb.checked = layer.checked ?? false;
                     cb.addEventListener("change", () => {
                         layer.checked = cb.checked;
-                        // TODO: toggle actual map layer visibility here
-                        console.log(`Layer "${layer.name}" → ${cb.checked ? "ON" : "OFF"}`);
+                        cb.checked ? addImageLayer(layer) : removeImageLayer(layer.id);
                     });
-
                     const nameEl = document.createElement("span");
                     nameEl.className = "layer-name";
                     nameEl.textContent = layer.name;
-
                     rowEl.appendChild(cb);
                     rowEl.appendChild(nameEl);
-
                     if (layer.badge) {
                         const badgeEl = document.createElement("span");
                         badgeEl.className = "layer-badge";
-                        const isCheck = layer.badge === "✓";
-                        badgeEl.style.cssText = `
-                            background: ${isCheck ? "rgba(52,211,153,0.12)" : "rgba(255,255,255,0.07)"};
-                            color: ${isCheck ? "#34d399" : "rgba(255,255,255,0.4)"};
-                            border: 1px solid ${isCheck ? "rgba(52,211,153,0.3)" : "rgba(255,255,255,0.12)"};
-                        `;
+                        badgeEl.style.cssText = getBadgeStyle(layer.badgeStyle, layer.badge);
                         badgeEl.textContent = layer.badge;
                         rowEl.appendChild(badgeEl);
                     }
-
                     itemsEl.appendChild(rowEl);
                 });
 
-                // Collapse toggle
                 headerEl.addEventListener("click", () => {
                     const collapsed = !headerEl.classList.contains("collapsed");
                     headerEl.classList.toggle("collapsed", collapsed);
@@ -725,35 +333,28 @@
                     itemsEl.style.maxHeight = collapsed ? "0" : "600px";
                     collapsedGroups[group.id] = collapsed;
                 });
-
                 groupEl.appendChild(headerEl);
                 groupEl.appendChild(itemsEl);
-
                 if (gi < groups.length - 1) {
                     const div = document.createElement("div");
                     div.className = "group-divider";
                     groupEl.appendChild(div);
                 }
-
                 layerPanelBody.appendChild(groupEl);
             });
         }
 
-        // ── Location select ──────────────────────────────────────────
         document.getElementById("locationSelect").addEventListener("change", function (e) {
             const selected = e.target.value;
+            removeAllImageLayers();
+            Object.values(layerData).forEach(groups =>
+                groups.forEach(group => group.layers.forEach(layer => { layer.checked = false; }))
+            );
             if (locations[selected]) {
-                view.goTo({
-                    center: locations[selected].center,
-                    zoom: locations[selected].zoom
-                });
-                collapsedGroups = {}; // reset collapse state for new location
+                view.goTo({ center: locations[selected].center, zoom: locations[selected].zoom });
+                collapsedGroups = {};
                 renderLayerPanel(selected);
-                // Auto-open panel on first location pick
-                if (!panelOpen) {
-                    panelOpen = true;
-                    layerPanel.classList.remove("hidden");
-                }
+                if (!panelOpen) { panelOpen = true; layerPanel.classList.remove("hidden"); }
             } else {
                 locationLabel.textContent = "No location selected";
                 layerPanelBody.innerHTML = '<div class="no-layers">Select a location to load layers</div>';
