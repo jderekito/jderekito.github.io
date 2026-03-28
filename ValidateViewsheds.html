@@ -123,7 +123,7 @@
     <div id="viewDiv"></div>
 
     <script type="module">
-        const [Map, MapView, GraphicsLayer, Graphic, Point, ImageryTileLayer, TileLayer] = await $arcgis.import([
+        const [Map, MapView, GraphicsLayer, Graphic, Point, ImageryTileLayer, TileLayer, RasterColormapRenderer, ImageryLayer] = await $arcgis.import([
             "@arcgis/core/Map.js",
             "@arcgis/core/views/MapView.js",
             "@arcgis/core/layers/GraphicsLayer.js",
@@ -202,7 +202,11 @@
         function addImageLayer(layerDef) {
             if (activeLayers[layerDef.id]) return;
             if (!layerDef.url) { console.error("No URL for layer", layerDef.id); return; }
-            const layer = new ImageryTileLayer({ url: layerDef.url, opacity: 0.75 });
+            const isViewshed = layerDef.id.toLowerCase().includes("viewshed") ||
+                               (layerDef.name && layerDef.name.toLowerCase().includes("viewshed"));
+            const layer = isViewshed
+                ? new ImageryLayer({ url: layerDef.url, opacity: 0.75, renderer: VIEWSHED_COLORMAP })
+                : new ImageryTileLayer({ url: layerDef.url, opacity: 0.75 });
             map.add(layer);
             activeLayers[layerDef.id] = layer;
         }
