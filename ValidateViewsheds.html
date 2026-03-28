@@ -130,7 +130,7 @@
             "@arcgis/core/Graphic.js",
             "@arcgis/core/geometry/Point.js",
             "@arcgis/core/layers/ImageryTileLayer.js",
-            "@arcgis/core/layers/TileLayer.js"
+            "@arcgis/core/layers/TileLayer.js",
         ]);
 
         // ── Layer defs: direct URLs — layers shared publicly, no auth needed ──
@@ -163,8 +163,8 @@
                 {
                     id: "validated_viewsheds", label: "Validated Viewsheds", color: "#34d399",
                     layers: [
-                        { id: "vvs_sab_00", name: "Validated VS — OBS-SAB-00", badge: "✓", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/SAB_00_Viewshed_Validated/ImageServer", checked: false },
-                        { id: "vvs_sab_04", name: "Validated VS — OBS-SAB-04", badge: "✓", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/SAB_04_Viewshed_Validated/ImageServer", checked: false }
+                        { id: "vvs_sab_00", name: "Validated VS — OBS-SAB-00", badge: "✓", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/SAB_00_Viewshed_Validated_Clip/ImageServer", checked: false },
+                        { id: "vvs_sab_04", name: "Validated VS — OBS-SAB-04", badge: "✓", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/SAB_04_Viewshed_Validated_Clip/ImageServer", checked: false }
                     ]
                 },
                 { id: "slr",     label: "Sea Level Rise",        color: "#4fa3e0", layers: SLR_LAYERS.map(l => ({ ...l, checked: false })) },
@@ -193,7 +193,6 @@
 
         // ── Map setup ─────────────────────────────────────────────────
         const graphicsLayer = new GraphicsLayer();
-        // Use OSM basemap — no API key required, works for public viewers
         const map  = new Map({ basemap: "osm", layers: [graphicsLayer] });
         const view = new MapView({ container: "viewDiv", map, center: [-81.26540, 29.85680], zoom: 14 });
 
@@ -201,10 +200,11 @@
         const activeLayers = {};
 
         function addImageLayer(layerDef) {
-            if (!layerDef.url || activeLayers[layerDef.id]) return;
-            const tileLayer = new ImageryTileLayer({ url: layerDef.url, opacity: 0.75 });
-            map.add(tileLayer);
-            activeLayers[layerDef.id] = tileLayer;
+            if (activeLayers[layerDef.id]) return;
+            if (!layerDef.url) { console.error("No URL for layer", layerDef.id); return; }
+            const layer = new ImageryTileLayer({ url: layerDef.url, opacity: 0.75 });
+            map.add(layer);
+            activeLayers[layerDef.id] = layer;
         }
 
         function removeImageLayer(layerId) {
