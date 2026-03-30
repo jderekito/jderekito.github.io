@@ -88,6 +88,23 @@
         .layer-badge { font-size: 9px; font-family: 'DM Mono', monospace; letter-spacing: 0.05em; padding: 2px 5px; border-radius: 3px; flex-shrink: 0; }
         .no-layers { padding: 18px 14px; text-align: center; color: rgba(255,255,255,0.25); font-size: 11px; font-family: 'DM Mono', monospace; letter-spacing: 0.06em; }
         .group-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 2px 14px; }
+
+        #basemapWidget {
+            position: absolute; bottom: 32px; left: 16px; z-index: 15;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .bm-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 7px 11px; background: rgba(10,14,20,0.88);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 7px;
+            color: rgba(255,255,255,0.6); font-family: 'DM Mono', monospace;
+            font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase;
+            cursor: pointer; transition: all 0.18s; backdrop-filter: blur(10px);
+            white-space: nowrap;
+        }
+        .bm-btn:hover { background: rgba(99,202,183,0.12); border-color: rgba(99,202,183,0.4); color: #63cab7; }
+        .bm-btn.active { background: rgba(99,202,183,0.15); border-color: #63cab7; color: #63cab7; }
+        .bm-icon { width: 20px; height: 20px; border-radius: 4px; flex-shrink: 0; background-size: cover; }
     </style>
 </head>
 <body>
@@ -118,6 +135,21 @@
         <div id="layerPanelBody">
             <div class="no-layers">Select a location to load layers</div>
         </div>
+    </div>
+
+    <div id="basemapWidget">
+        <button class="bm-btn active" data-basemap="osm">
+            <span class="bm-icon" style="background:linear-gradient(135deg,#a8d5a2,#7ec8e3,#f5f5dc);"></span>
+            Street
+        </button>
+        <button class="bm-btn" data-basemap="satellite">
+            <span class="bm-icon" style="background:linear-gradient(135deg,#1a3a1a,#2d5a2d,#4a7c59);"></span>
+            Satellite
+        </button>
+        <button class="bm-btn" data-basemap="gray-vector">
+            <span class="bm-icon" style="background:linear-gradient(135deg,#e8e8e8,#d0d0d0,#b8b8b8);"></span>
+            Minimal
+        </button>
     </div>
 
     <div id="viewDiv"></div>
@@ -163,8 +195,8 @@
                 {
                     id: "validated_viewsheds", label: "Validated Viewsheds", color: "#34d399",
                     layers: [
-                        { id: "vvs_sab_00", name: "Validated VS — OBS-SAB-00", badge: "✓", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/SAB_00_Viewshed_Validated_Clip/ImageServer", checked: false },
-                        { id: "vvs_sab_04", name: "Validated VS — OBS-SAB-04", badge: "✓", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/SAB_04_Viewshed_Validated_Clip/ImageServer", checked: false }
+                        { id: "vvs_sab_00", name: "Validated VS — OBS-SAB-00", badge: "✓", url: "https://tiles.arcgis.com/tiles/eoP5lsTDzcIUyaQZ/arcgis/rest/services/SAB_00_Viewshed_Validated_Clip3/MapServer", isMapServer: true, checked: false },
+                        { id: "vvs_sab_04", name: "Validated VS — OBS-SAB-04", badge: "✓", url: "https://tiles.arcgis.com/tiles/eoP5lsTDzcIUyaQZ/arcgis/rest/services/SAB_04_Viewshed_Validated_Clip3/MapServer", isMapServer: true, checked: false }
                     ]
                 },
                 { id: "slr",     label: "Sea Level Rise",        color: "#4fa3e0", layers: SLR_LAYERS.map(l => ({ ...l, checked: false })) },
@@ -204,9 +236,16 @@
             if (!layerDef.url) { console.error("No URL for layer", layerDef.id); return; }
             const isViewshed = layerDef.id.toLowerCase().includes("viewshed") ||
                                (layerDef.name && layerDef.name.toLowerCase().includes("viewshed"));
-            const layer = isViewshed
-                ? new ImageryLayer({ url: layerDef.url, opacity: 0.75, renderer: VIEWSHED_COLORMAP })
-                : new ImageryTileLayer({ url: layerDef.url, opacity: 0.75 });
+            let layer;
+            if (layerDef.isMapServer) {
+                // Colormap baked in from Pro — use TileLayer
+                layer = new TileLayer({ url: layerDef.url, opacity: 0.75 });
+            } else if (isViewshed) {
+                // Dynamic imagery — apply colormap client-side
+                layer = new ImageryLayer({ url: layerDef.url, opacity: 0.75, renderer: VIEWSHED_COLORMAP });
+            } else {
+                layer = new ImageryTileLayer({ url: layerDef.url, opacity: 0.75 });
+            }
             map.add(layer);
             activeLayers[layerDef.id] = layer;
         }
@@ -363,6 +402,14 @@
                 locationLabel.textContent = "No location selected";
                 layerPanelBody.innerHTML = '<div class="no-layers">Select a location to load layers</div>';
             }
+        });
+        // ── Basemap switcher ──────────────────────────────────────────
+        document.querySelectorAll('.bm-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.bm-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                map.basemap = btn.dataset.basemap;
+            });
         });
     </script>
 </body>
