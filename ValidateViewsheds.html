@@ -132,7 +132,7 @@
         }
 
         #legendPanel {
-            position: absolute; bottom: 32px; right: 16px; z-index: 15;
+            position: absolute; top: 52px; left: 16px; z-index: 15;
             background: rgba(10,14,20,0.88); backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
             padding: 10px 14px; min-width: 200px;
@@ -163,7 +163,7 @@
         }
 
         @media (max-width: 768px) {
-            #legendPanel { bottom: 70px; right: 12px; min-width: 170px; }
+            #legendPanel { top: 48px; left: 12px; min-width: 170px; }
         }
     </style>
 </head>
@@ -197,7 +197,7 @@
         </div>
     </div>
 
-    <div id="legendPanel" class="hidden">
+    <div id="legendPanel">
         <div id="legendTitle">Viewshed Legend</div>
         <div class="legend-row">
             <div class="legend-swatch" style="background:#FFBEBE;"></div>
@@ -275,7 +275,7 @@
 
         // ── Location config ───────────────────────────────────────────
         const locations = {
-            staugybeach: { label: "St. Augustine Beach",         center: [-81.26540, 29.85680],   zoom: 15 },
+            staugybeach: { label: "St. Augustine Beach",         center: [-81.26540, 29.85680],   zoom: 17 },
             staugyfort:  { label: "St. Augustine Historic Fort", center: [-81.31180, 29.89810],   zoom: 16 },
             vilano:      { label: "Vilano Beach (Blue House)",   center: [-81.298978, 29.936989], zoom: 17 },
             ftpickens:   { label: "Fort Pickens",                center: [-87.290411, 30.327058], zoom: 15 }
@@ -323,10 +323,6 @@
         // ── Active layer cache ────────────────────────────────────────
         const activeLayers = {};
 
-        function updateLegendVisibility() {
-            const anyViewshed = Object.keys(activeLayers).some(id => id.toLowerCase().includes("viewshed"));
-            document.getElementById("legendPanel").classList.toggle("hidden", !anyViewshed);
-        }
 
         function addImageLayer(layerDef) {
             if (activeLayers[layerDef.id]) return;
@@ -336,12 +332,10 @@
                 : new ImageryTileLayer({ url: layerDef.url, opacity: 0.75 });
             map.add(layer);
             activeLayers[layerDef.id] = layer;
-            updateLegendVisibility();
         }
 
         function removeImageLayer(layerId) {
             if (activeLayers[layerId]) { map.remove(activeLayers[layerId]); delete activeLayers[layerId]; }
-            updateLegendVisibility();
         }
 
         function removeAllImageLayers() {
