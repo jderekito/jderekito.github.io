@@ -328,7 +328,7 @@
     <div id="viewDiv"></div>
 
     <script type="module">
-        const [Map, MapView, GraphicsLayer, Graphic, Point, ImageryTileLayer, TileLayer] = await $arcgis.import([
+        const [Map, MapView, GraphicsLayer, Graphic, Point, ImageryTileLayer, TileLayer, reactiveUtils] = await $arcgis.import([
             "@arcgis/core/Map.js",
             "@arcgis/core/views/MapView.js",
             "@arcgis/core/layers/GraphicsLayer.js",
@@ -336,6 +336,7 @@
             "@arcgis/core/geometry/Point.js",
             "@arcgis/core/layers/ImageryTileLayer.js",
             "@arcgis/core/layers/TileLayer.js",
+            "@arcgis/core/core/reactiveUtils.js",
         ]);
 
         // ── Layer defs: direct URLs — layers shared publicly, no auth needed ──
@@ -636,11 +637,12 @@
         });
 
         // Re-capture when map stops moving
-        view.watch("stationary", async (stationary) => {
-            if (stationary && identifyMode) {
-                await captureScreenshot();
+        reactiveUtils.watch(
+            () => view.stationary,
+            async (stationary) => {
+                if (stationary && identifyMode) await captureScreenshot();
             }
-        });
+        );
 
         const identifyPopup = document.getElementById("identifyPopup");
         const identifyLabel  = document.getElementById("identifyPopupLabel");
