@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArcGIS JS SDK - Basemap Viewer</title>
+    <title>VISTA</title>
 
 
     <script type="module" src="https://js.arcgis.com/5.0/"></script>
@@ -144,6 +144,44 @@
             text-transform: uppercase; color: rgba(255,255,255,0.4);
             margin-bottom: 8px; padding-bottom: 6px;
             border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        #legendCollapseBtn {
+            background: none; border: none; cursor: pointer; padding: 0;
+            color: rgba(255,255,255,0.3); display: flex; align-items: center;
+            transition: color 0.15s;
+        }
+        #legendCollapseBtn:hover { color: #63cab7; }
+        #legendCollapseBtn svg { width: 14px; height: 14px; transition: transform 0.2s; }
+        #legendPanel.collapsed #legendCollapseBtn svg { transform: rotate(-90deg); }
+        #legendPanel.collapsed #legendBody { display: none; }
+        #legendPanel.collapsed #legendTitle { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+
+        #identifyPopup {
+            position: absolute; z-index: 25; min-width: 180px;
+            background: rgba(10,14,20,0.92); backdrop-filter: blur(14px);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+            padding: 10px 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            pointer-events: none; display: none;
+        }
+        #identifyPopup.visible { display: block; }
+        #identifyPopupTitle {
+            font-size: 10px; font-family: 'DM Mono', monospace; letter-spacing: 0.1em;
+            text-transform: uppercase; color: rgba(255,255,255,0.4);
+            margin-bottom: 6px; padding-bottom: 5px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        #identifyPopupSwatch {
+            width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.15); display: inline-block; margin-right: 7px; vertical-align: middle;
+        }
+        #identifyPopupValue {
+            font-size: 12px; font-family: 'Syne', sans-serif; color: rgba(255,255,255,0.85);
+            display: flex; align-items: center;
+        }
+        #identifyPopupSub {
+            font-size: 10px; font-family: 'DM Mono', monospace;
+            color: rgba(255,255,255,0.3); margin-top: 3px; letter-spacing: 0.04em;
         }
         .legend-row {
             display: flex; align-items: center; gap: 9px;
@@ -197,8 +235,16 @@
         </div>
     </div>
 
-    <div id="legendPanel">
-        <div id="legendTitle">Viewshed Legend</div>
+    <div id="legendPanel" class="hidden">
+        <div id="legendTitle">
+            Viewshed Legend
+            <button id="legendCollapseBtn" title="Hide legend">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="4 6 8 10 12 6"/>
+                </svg>
+            </button>
+        </div>
+        <div id="legendBody">
         <div class="legend-row">
             <div class="legend-swatch" style="background:#FFBEBE;"></div>
             <div>
@@ -227,6 +273,13 @@
                 <div class="legend-sub">False Negative</div>
             </div>
         </div>
+        </div>
+    </div>
+
+    <div id="identifyPopup">
+        <div id="identifyPopupTitle">Pixel Value</div>
+        <div id="identifyPopupValue"><span id="identifyPopupSwatch"></span><span id="identifyPopupLabel">—</span></div>
+        <div id="identifyPopupSub" id="identifyPopupSub"></div>
     </div>
 
     <div id="basemapWidget">
@@ -324,6 +377,17 @@
         const activeLayers = {};
 
 
+        function updateLegendVisibility() {
+            const anyViewshed = Object.keys(activeLayers).some(id => id.toLowerCase().includes("vvs"));
+            const legendEl = document.getElementById("legendPanel");
+            legendEl.classList.toggle("hidden", !anyViewshed);
+            // On mobile, close layer panel when legend opens to avoid overlap
+            if (anyViewshed && window.innerWidth <= 768 && panelOpen) {
+                panelOpen = false;
+                layerPanel.classList.add("hidden");
+            }
+        }
+
         function addImageLayer(layerDef) {
             if (activeLayers[layerDef.id]) return;
             if (!layerDef.url) { console.error("No URL for layer", layerDef.id); return; }
@@ -332,10 +396,12 @@
                 : new ImageryTileLayer({ url: layerDef.url, opacity: 0.75 });
             map.add(layer);
             activeLayers[layerDef.id] = layer;
+            updateLegendVisibility();
         }
 
         function removeImageLayer(layerId) {
             if (activeLayers[layerId]) { map.remove(activeLayers[layerId]); delete activeLayers[layerId]; }
+            updateLegendVisibility();
         }
 
         function removeAllImageLayers() {
@@ -371,11 +437,7 @@
         });
         graphicsLayer.add(blueHouseGraphic);
 
-        view.on("click", async (event) => {
-            const response = await view.hitTest(event);
-            const hit = response.results.find(r => r.graphic === blueHouseGraphic);
-            if (hit) window.open(hit.graphic.attributes.zillowUrl, "_blank");
-        });
+        // Blue house click handled inside the identify handler above
         view.on("pointer-move", async (event) => {
             const response = await view.hitTest(event);
             view.cursor = response.results.find(r => r.graphic === blueHouseGraphic) ? "pointer" : "default";
@@ -487,6 +549,129 @@
                 layerPanelBody.innerHTML = '<div class="no-layers">Select a location to load layers</div>';
             }
         });
+        // ── Legend collapse toggle ────────────────────────────────────
+        document.getElementById("legendCollapseBtn").addEventListener("click", () => {
+            document.getElementById("legendPanel").classList.toggle("collapsed");
+        });
+
+        // ── Identify click ────────────────────────────────────────────
+        const VIEWSHED_VALUES = {
+            0: { label: "Not Visible",  sub: "True Negative",  color: "#FFBEBE" },
+            1: { label: "Visible",      sub: "True Positive",  color: "#D3FFBE" },
+            2: { label: "Seen",         sub: "False Positive", color: "#A3FF73" },
+            3: { label: "Unseen",       sub: "False Negative", color: "#FF7F7F" }
+        };
+
+        const identifyPopup = document.getElementById("identifyPopup");
+        const identifyLabel  = document.getElementById("identifyPopupLabel");
+        const identifySwatch = document.getElementById("identifyPopupSwatch");
+        const identifySub    = document.getElementById("identifyPopupSub");
+
+        // ── Color-based pixel identify ────────────────────────────────
+        // Tolerance for color matching (0-255 per channel)
+        const COLOR_TOLERANCE = 30;
+
+        // Expected colors per value — must match baked-in tile colormap
+        // RGB values from actual tile pixel sampling (JPEG compressed)
+        const VIEWSHED_COLORS = [
+            { value: 0, r: 246, g: 193, b: 193, info: VIEWSHED_VALUES[0] },  // Not Visible  (sampled)
+            { value: 1, r: 218, g: 237, b: 211, info: VIEWSHED_VALUES[1] },  // Visible      (sampled)
+            { value: 2, r: 208, g: 246, b: 188, info: VIEWSHED_VALUES[2] },  // Seen         (sampled)
+            { value: 3, r: 246, g: 219, b: 219, info: VIEWSHED_VALUES[3] }   // Unseen       (sampled)
+        ];
+
+        function colorDistance(r1, g1, b1, r2, g2, b2) {
+            return Math.sqrt((r1-r2)**2 + (g1-g2)**2 + (b1-b2)**2);
+        }
+
+        function matchColor(r, g, b, a) {
+            // Transparent pixel — not within viewshed
+            if (a < 50) return null;
+            let best = null, bestDist = Infinity;
+            for (const entry of VIEWSHED_COLORS) {
+                const dist = colorDistance(r, g, b, entry.r, entry.g, entry.b);
+                if (dist < bestDist) { bestDist = dist; best = entry; }
+            }
+            // Use a generous threshold to account for JPEG tile compression artifacts
+            // but still require the pixel to be somewhat close to a known color
+            return bestDist <= 13 ? best : null;
+        }
+
+        view.on("click", async (event) => {
+            // Skip if blue house was clicked
+            const hitResponse = await view.hitTest(event);
+            if (hitResponse.results.find(r => r.graphic === blueHouseGraphic)) {
+                window.open(blueHouseGraphic.attributes.zillowUrl, "_blank");
+                return;
+            }
+
+            // Check if any viewshed layer is active
+            const viewshedLayers = Object.entries(activeLayers)
+                .filter(([id]) => id.toLowerCase().includes("vvs"))
+                .map(([, layer]) => layer);
+            if (viewshedLayers.length === 0) return;
+
+            try {
+                // Sample pixel color from the map canvas at click point
+                const canvas = document.querySelector("#viewDiv canvas");
+                if (!canvas) return;
+
+                // Take a screenshot of the view and sample the pixel
+                const screenshot = await view.takeScreenshot({ width: view.width, height: view.height });
+                const img = new Image();
+                img.src = screenshot.dataUrl;
+                await new Promise(res => img.onload = res);
+
+                const offscreen = document.createElement("canvas");
+                offscreen.width = view.width;
+                offscreen.height = view.height;
+                const ctx = offscreen.getContext("2d");
+                ctx.drawImage(img, 0, 0);
+
+                const screenPt = view.toScreen(event.mapPoint);
+                const x = Math.round(screenPt.x);
+                const y = Math.round(screenPt.y);
+                // Sample 3x3 area and average to reduce compression noise
+                const sampleSize = 3;
+                const offset = Math.floor(sampleSize / 2);
+                const pixels = ctx.getImageData(x - offset, y - offset, sampleSize, sampleSize).data;
+                let rSum = 0, gSum = 0, bSum = 0, aSum = 0, count = 0;
+                for (let i = 0; i < pixels.length; i += 4) {
+                    rSum += pixels[i]; gSum += pixels[i+1]; bSum += pixels[i+2]; aSum += pixels[i+3];
+                    count++;
+                }
+                const r = Math.round(rSum/count);
+                const g = Math.round(gSum/count);
+                const b = Math.round(bSum/count);
+                const a = Math.round(aSum/count);
+
+                const match = matchColor(r, g, b, a);
+
+                if (match) {
+                    identifyLabel.textContent = match.info.label;
+                    identifySwatch.style.background = match.info.color;
+                    identifySub.textContent = match.info.sub;
+                } else {
+                    // Clicked outside viewshed or on basemap
+                    identifyPopup.classList.remove("visible");
+                    return;
+                }
+
+                // Position popup near click, keep within viewport
+                const px = Math.min(x + 12, window.innerWidth - 200);
+                const py = Math.min(y + 12, window.innerHeight - 100);
+                identifyPopup.style.left = px + "px";
+                identifyPopup.style.top  = py + "px";
+                identifyPopup.classList.add("visible");
+
+            } catch(e) {
+                console.warn("Identify failed", e);
+            }
+        });
+
+        // Hide popup on map drag
+        view.on("drag", () => identifyPopup.classList.remove("visible"));
+
         // ── Basemap switcher ──────────────────────────────────────────
         document.querySelectorAll('.bm-btn').forEach(btn => {
             btn.addEventListener('click', () => {
