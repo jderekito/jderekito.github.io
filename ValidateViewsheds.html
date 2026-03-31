@@ -105,6 +105,66 @@
         .bm-btn:hover { background: rgba(99,202,183,0.12); border-color: rgba(99,202,183,0.4); color: #63cab7; }
         .bm-btn.active { background: rgba(99,202,183,0.15); border-color: #63cab7; color: #63cab7; }
         .bm-icon { width: 20px; height: 20px; border-radius: 4px; flex-shrink: 0; background-size: cover; }
+
+        /* ── Mobile styles ─────────────────────────────────────── */
+        @media (max-width: 768px) {
+            #topBar { padding: 8px 12px; gap: 8px; }
+            #topBar label { display: none; }
+            #locationSelect { font-size: 12px; padding: 5px 8px; min-width: 0; flex: 1; }
+            #layerToggleBtn { padding: 5px 10px; font-size: 10px; }
+
+            #layerPanel { 
+                width: calc(100vw - 24px); right: 12px; left: 12px;
+                top: 48px; max-height: 50vh;
+            }
+            #layerPanelBody { max-height: calc(50vh - 60px); }
+
+            #basemapWidget {
+                bottom: 24px; left: 12px; flex-direction: row; gap: 6px;
+            }
+            .bm-btn { padding: 8px 10px; font-size: 10px; gap: 6px; }
+            .bm-icon { width: 16px; height: 16px; }
+        }
+
+        @media (max-width: 480px) {
+            #basemapWidget { bottom: 16px; left: 8px; right: 8px; justify-content: center; }
+            .bm-btn { flex: 1; justify-content: center; }
+        }
+
+        #legendPanel {
+            position: absolute; bottom: 32px; right: 16px; z-index: 15;
+            background: rgba(10,14,20,0.88); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 10px;
+            padding: 10px 14px; min-width: 200px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        #legendPanel.hidden { display: none; }
+        #legendTitle {
+            font-size: 10px; font-family: 'DM Mono', monospace; letter-spacing: 0.1em;
+            text-transform: uppercase; color: rgba(255,255,255,0.4);
+            margin-bottom: 8px; padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .legend-row {
+            display: flex; align-items: center; gap: 9px;
+            padding: 4px 0;
+        }
+        .legend-swatch {
+            width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .legend-label {
+            font-size: 11px; font-family: 'Syne', sans-serif;
+            color: rgba(255,255,255,0.75); flex: 1;
+        }
+        .legend-sub {
+            font-size: 9px; font-family: 'DM Mono', monospace;
+            color: rgba(255,255,255,0.3); letter-spacing: 0.04em;
+        }
+
+        @media (max-width: 768px) {
+            #legendPanel { bottom: 70px; right: 12px; min-width: 170px; }
+        }
     </style>
 </head>
 <body>
@@ -137,8 +197,40 @@
         </div>
     </div>
 
+    <div id="legendPanel" class="hidden">
+        <div id="legendTitle">Viewshed Legend</div>
+        <div class="legend-row">
+            <div class="legend-swatch" style="background:#FFBEBE;"></div>
+            <div>
+                <div class="legend-label">Not Visible</div>
+                <div class="legend-sub">True Negative</div>
+            </div>
+        </div>
+        <div class="legend-row">
+            <div class="legend-swatch" style="background:#D3FFBE;"></div>
+            <div>
+                <div class="legend-label">Visible</div>
+                <div class="legend-sub">True Positive</div>
+            </div>
+        </div>
+        <div class="legend-row">
+            <div class="legend-swatch" style="background:#A3FF73;"></div>
+            <div>
+                <div class="legend-label">Seen</div>
+                <div class="legend-sub">False Positive</div>
+            </div>
+        </div>
+        <div class="legend-row">
+            <div class="legend-swatch" style="background:#FF7F7F;"></div>
+            <div>
+                <div class="legend-label">Unseen</div>
+                <div class="legend-sub">False Negative</div>
+            </div>
+        </div>
+    </div>
+
     <div id="basemapWidget">
-        <button class="bm-btn active" data-basemap="osm">
+        <button class="bm-btn" data-basemap="osm">
             <span class="bm-icon" style="background:linear-gradient(135deg,#a8d5a2,#7ec8e3,#f5f5dc);"></span>
             Street
         </button>
@@ -146,7 +238,7 @@
             <span class="bm-icon" style="background:linear-gradient(135deg,#1a3a1a,#2d5a2d,#4a7c59);"></span>
             Satellite
         </button>
-        <button class="bm-btn" data-basemap="gray-vector">
+        <button class="bm-btn active" data-basemap="gray-vector">
             <span class="bm-icon" style="background:linear-gradient(135deg,#e8e8e8,#d0d0d0,#b8b8b8);"></span>
             Minimal
         </button>
@@ -155,7 +247,7 @@
     <div id="viewDiv"></div>
 
     <script type="module">
-        const [Map, MapView, GraphicsLayer, Graphic, Point, ImageryTileLayer, TileLayer, RasterColormapRenderer, ImageryLayer] = await $arcgis.import([
+        const [Map, MapView, GraphicsLayer, Graphic, Point, ImageryTileLayer, TileLayer] = await $arcgis.import([
             "@arcgis/core/Map.js",
             "@arcgis/core/views/MapView.js",
             "@arcgis/core/layers/GraphicsLayer.js",
@@ -195,8 +287,8 @@
                 {
                     id: "validated_viewsheds", label: "Validated Viewsheds", color: "#34d399",
                     layers: [
-                        { id: "vvs_sab_00", name: "Validated VS — OBS-SAB-00", badge: "✓", url: "https://tiles.arcgis.com/tiles/eoP5lsTDzcIUyaQZ/arcgis/rest/services/SAB_00_Viewshed_Validated_Clip3/MapServer", isMapServer: true, checked: false },
-                        { id: "vvs_sab_04", name: "Validated VS — OBS-SAB-04", badge: "✓", url: "https://tiles.arcgis.com/tiles/eoP5lsTDzcIUyaQZ/arcgis/rest/services/SAB_04_Viewshed_Validated_Clip3/MapServer", isMapServer: true, checked: false }
+                        { id: "vvs_sab_00", name: "Validated VS — OBS-SAB-00", badge: "✓", url: "https://tiles.arcgis.com/tiles/eoP5lsTDzcIUyaQZ/arcgis/rest/services/SAB_00_Viewshed_Validated_Clip/MapServer", isMapServer: true, checked: false },
+                        { id: "vvs_sab_04", name: "Validated VS — OBS-SAB-04", badge: "✓", url: "https://tiles.arcgis.com/tiles/eoP5lsTDzcIUyaQZ/arcgis/rest/services/SAB_04_Viewshed_Validated_Clip/MapServer", isMapServer: true, checked: false }
                     ]
                 },
                 { id: "slr",     label: "Sea Level Rise",        color: "#4fa3e0", layers: SLR_LAYERS.map(l => ({ ...l, checked: false })) },
@@ -210,8 +302,8 @@
                 {
                     id: "validated_viewsheds", label: "Validated Viewsheds", color: "#34d399",
                     layers: [
-                        { id: "vvs_vb_00", name: "Validated VS — OBS-VB-00", badge: "✓", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/VB_00_Viewshed_Validated/ImageServer", checked: false },
-                        { id: "vvs_vb_04", name: "Validated VS — OBS-VB-04", badge: "✓", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/VB_04_Viewshed_Validate_Clip/ImageServer", checked: false }
+                        { id: "vvs_vb_00", name: "Validated VS — OBS-VB-00", badge: "✓", url: "https://tiles.arcgis.com/tiles/eoP5lsTDzcIUyaQZ/arcgis/rest/services/VB_00_Viewshed_Validated_Clip2/MapServer", isMapServer: true, checked: false },
+                        { id: "vvs_vb_04", name: "Validated VS — OBS-VB-04", badge: "✓", url: "https://tiles.arcgis.com/tiles/eoP5lsTDzcIUyaQZ/arcgis/rest/services/VB_04_Viewshed_Validated_Clip/MapServer", isMapServer: true, checked: false }
                     ]
                 },
                 { id: "slr",     label: "Sea Level Rise",        color: "#4fa3e0", layers: SLR_LAYERS.map(l => ({ ...l, checked: false })) },
@@ -225,33 +317,31 @@
 
         // ── Map setup ─────────────────────────────────────────────────
         const graphicsLayer = new GraphicsLayer();
-        const map  = new Map({ basemap: "osm", layers: [graphicsLayer] });
+        const map  = new Map({ basemap: "gray-vector", layers: [graphicsLayer] });
         const view = new MapView({ container: "viewDiv", map, center: [-81.26540, 29.85680], zoom: 14 });
 
         // ── Active layer cache ────────────────────────────────────────
         const activeLayers = {};
 
+        function updateLegendVisibility() {
+            const anyViewshed = Object.keys(activeLayers).some(id => id.toLowerCase().includes("viewshed"));
+            document.getElementById("legendPanel").classList.toggle("hidden", !anyViewshed);
+        }
+
         function addImageLayer(layerDef) {
             if (activeLayers[layerDef.id]) return;
             if (!layerDef.url) { console.error("No URL for layer", layerDef.id); return; }
-            const isViewshed = layerDef.id.toLowerCase().includes("viewshed") ||
-                               (layerDef.name && layerDef.name.toLowerCase().includes("viewshed"));
-            let layer;
-            if (layerDef.isMapServer) {
-                // Colormap baked in from Pro — use TileLayer
-                layer = new TileLayer({ url: layerDef.url, opacity: 0.75 });
-            } else if (isViewshed) {
-                // Dynamic imagery — apply colormap client-side
-                layer = new ImageryLayer({ url: layerDef.url, opacity: 0.75, renderer: VIEWSHED_COLORMAP });
-            } else {
-                layer = new ImageryTileLayer({ url: layerDef.url, opacity: 0.75 });
-            }
+            const layer = layerDef.isMapServer
+                ? new TileLayer({ url: layerDef.url, opacity: 0.75 })
+                : new ImageryTileLayer({ url: layerDef.url, opacity: 0.75 });
             map.add(layer);
             activeLayers[layerDef.id] = layer;
+            updateLegendVisibility();
         }
 
         function removeImageLayer(layerId) {
             if (activeLayers[layerId]) { map.remove(activeLayers[layerId]); delete activeLayers[layerId]; }
+            updateLegendVisibility();
         }
 
         function removeAllImageLayers() {
