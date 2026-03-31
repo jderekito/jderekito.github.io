@@ -295,6 +295,10 @@
             <span class="bm-icon" style="background:linear-gradient(135deg,#e8e8e8,#d0d0d0,#b8b8b8);"></span>
             Minimal
         </button>
+        <button class="bm-btn" data-basemap="none">
+            <span class="bm-icon" style="background:#f0f0f0; border: 1px solid rgba(255,255,255,0.15);"></span>
+            None
+        </button>
     </div>
 
     <div id="viewDiv"></div>
@@ -572,12 +576,12 @@
         const COLOR_TOLERANCE = 30;
 
         // Expected colors per value — must match baked-in tile colormap
-        // RGB values from actual tile pixel sampling (JPEG compressed)
+        // RGB values sampled on white/gray basemap at 0.75 opacity
         const VIEWSHED_COLORS = [
-            { value: 0, r: 246, g: 193, b: 193, info: VIEWSHED_VALUES[0] },  // Not Visible  (sampled)
-            { value: 1, r: 218, g: 237, b: 211, info: VIEWSHED_VALUES[1] },  // Visible      (sampled)
-            { value: 2, r: 208, g: 246, b: 188, info: VIEWSHED_VALUES[2] },  // Seen         (sampled)
-            { value: 3, r: 246, g: 219, b: 219, info: VIEWSHED_VALUES[3] }   // Unseen       (sampled)
+            { value: 0, r: 255, g: 189, b: 189, info: VIEWSHED_VALUES[0] },  // Not Visible
+            { value: 1, r: 211, g: 255, b: 189, info: VIEWSHED_VALUES[1] },  // Visible
+            { value: 2, r: 163, g: 255, b: 114, info: VIEWSHED_VALUES[2] },  // Seen
+            { value: 3, r: 255, g: 126, b: 126, info: VIEWSHED_VALUES[3] }   // Unseen
         ];
 
         function colorDistance(r1, g1, b1, r2, g2, b2) {
@@ -594,7 +598,7 @@
             }
             // Use a generous threshold to account for JPEG tile compression artifacts
             // but still require the pixel to be somewhat close to a known color
-            return bestDist <= 13 ? best : null;
+            return bestDist <= 35 ? best : null;
         }
 
         view.on("click", async (event) => {
@@ -673,11 +677,20 @@
         view.on("drag", () => identifyPopup.classList.remove("visible"));
 
         // ── Basemap switcher ──────────────────────────────────────────
+        // Set viewDiv background for "none" basemap
+        const viewDivEl = document.getElementById("viewDiv");
+
         document.querySelectorAll('.bm-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.bm-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                map.basemap = btn.dataset.basemap;
+                if (btn.dataset.basemap === "none") {
+                    map.basemap = null;
+                    viewDivEl.style.background = "#f0f0f0";
+                } else {
+                    map.basemap = btn.dataset.basemap;
+                    viewDivEl.style.background = "";
+                }
             });
         });
     </script>
