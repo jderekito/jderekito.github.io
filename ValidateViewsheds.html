@@ -626,13 +626,14 @@
                 viewDivEl2.removeEventListener("touchstart", onTouchStart);
                 viewDivEl2.removeEventListener("touchmove", onTouchMove);
                 viewDivEl2.removeEventListener("touchend", onTouchEnd);
+                identifyPopup.classList.remove("visible");
             } else {
                 view.cursor = "crosshair";
                 // Pre-capture screenshot when identify mode turns on
                 await captureScreenshot();
                 viewDivEl2.addEventListener("touchstart", onTouchStart, { passive: true });
                 viewDivEl2.addEventListener("touchmove", onTouchMove, { passive: true });
-                viewDivEl2.addEventListener("touchend", onTouchEnd, { passive: true });
+                viewDivEl2.addEventListener("touchend", onTouchEnd);
             }
         });
 
@@ -680,13 +681,13 @@
         }
 
         // Touch tracking — only used when identify mode is active
-        let activeTouches = 0;
         let touchStartX = 0, touchStartY = 0;
         let touchMoved = false;
-        const TAP_MOVE_THRESHOLD = 10;
+        let touchCount = 0;
+        const TAP_MOVE_THRESHOLD = 8;
 
         function onTouchStart(e) {
-            activeTouches = e.touches.length;
+            touchCount = e.touches.length;
             if (e.touches.length === 1) {
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
@@ -694,14 +695,48 @@
             }
         }
         function onTouchMove(e) {
-            if (e.touches.length === 1) {
-                const dx = Math.abs(e.touches[0].clientX - touchStartX);
-                const dy = Math.abs(e.touches[0].clientY - touchStartY);
-                if (dx > TAP_MOVE_THRESHOLD || dy > TAP_MOVE_THRESHOLD) touchMoved = true;
-            }
+            if (e.touches.length > 1) { touchMoved = true; return; }
+            const dx = Math.abs(e.touches[0].clientX - touchStartX);
+            const dy = Math.abs(e.touches[0].clientY - touchStartY);
+            if (dx > TAP_MOVE_THRESHOLD || dy > TAP_MOVE_THRESHOLD) touchMoved = true;
         }
-        function onTouchEnd() {
-            setTimeout(() => { activeTouches = 0; }, 300);
+        async function onTouchEnd(e) {
+            if (touchMoved || touchCount > 1) return;
+            if (!identifyMode || !cachedCanvas) return;
+            const viewshedLayers = Object.entries(activeLayers)
+                .filter(([id]) => id.toLowerCase().includes("vvs"))
+                .map(([, layer]) => layer);
+            if (viewshedLayers.length === 0) return;
+
+            // Get tap position
+            const touch = e.changedTouches[0];
+            const rect = viewDivEl2.getBoundingClientRect();
+            const x = Math.round(touch.clientX - rect.left);
+            const y = Math.round(touch.clientY - rect.top);
+
+            const ctx = cachedCanvas.getContext("2d");
+            const sampleSize = 3, offset = Math.floor(sampleSize / 2);
+            const pixels = ctx.getImageData(x - offset, y - offset, sampleSize, sampleSize).data;
+            let rSum=0, gSum=0, bSum=0, aSum=0, count=0;
+            for (let i = 0; i < pixels.length; i += 4) {
+                rSum+=pixels[i]; gSum+=pixels[i+1]; bSum+=pixels[i+2]; aSum+=pixels[i+3]; count++;
+            }
+            const r=Math.round(rSum/count), g=Math.round(gSum/count),
+                  b=Math.round(bSum/count), a=Math.round(aSum/count);
+
+            const match = matchColor(r, g, b, a);
+            if (match) {
+                identifyLabel.textContent = match.info.label;
+                identifySwatch.style.background = match.info.color;
+                identifySub.textContent = match.info.sub;
+                const px = Math.min(x + 12, window.innerWidth - 200);
+                const py = Math.min(y + 12, window.innerHeight - 100);
+                identifyPopup.style.left = px + "px";
+                identifyPopup.style.top  = py + "px";
+                identifyPopup.classList.add("visible");
+            } else {
+                identifyPopup.classList.remove("visible");
+            }
         }
 
         view.on("click", async (event) => {
@@ -712,13 +747,9 @@
                 return;
             }
 
-            // Only do identify if mode is active
+            // Touch identify is handled by touchend — only handle mouse clicks here
+            if (event.native && event.native.pointerType === "touch") return;
             if (!identifyMode) return;
-            // On touch devices, skip if it was a drag or multi-touch
-            if (event.native && event.native.pointerType === "touch") {
-                if (activeTouches > 1) return;
-                if (touchMoved) return;
-            }
             const viewshedLayers = Object.entries(activeLayers)
                 .filter(([id]) => id.toLowerCase().includes("vvs"))
                 .map(([, layer]) => layer);
@@ -728,7 +759,6 @@
                 if (!cachedCanvas) return;
                 const offscreen = cachedCanvas;
                 const ctx = offscreen.getContext("2d");
-
                 const screenPt = view.toScreen(event.mapPoint);
                 const x = Math.round(screenPt.x);
                 const y = Math.round(screenPt.y);
