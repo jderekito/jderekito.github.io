@@ -213,7 +213,6 @@
             <option value="staugybeach">St. Augustine Beach</option>
             <option value="staugyfort">St. Augustine Historic Fort (A1A)</option>
             <option value="vilano">Vilano Beach (Blue House)</option>
-            <option value="ftpickens">Fort Pickens (360 Imagery Example)</option>
         </select>
         <button id="layerToggleBtn" title="Toggle layer panel">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
@@ -283,6 +282,10 @@
     </div>
 
     <div id="basemapWidget">
+        <button class="bm-btn" data-basemap="none">
+            <span class="bm-icon" style="background:#f0f0f0; border: 1px solid rgba(255,255,255,0.15);"></span>
+            None (id pixel)
+        </button>
         <button class="bm-btn" data-basemap="osm">
             <span class="bm-icon" style="background:linear-gradient(135deg,#a8d5a2,#7ec8e3,#f5f5dc);"></span>
             Street
@@ -294,10 +297,6 @@
         <button class="bm-btn active" data-basemap="gray-vector">
             <span class="bm-icon" style="background:linear-gradient(135deg,#e8e8e8,#d0d0d0,#b8b8b8);"></span>
             Minimal
-        </button>
-        <button class="bm-btn" data-basemap="none">
-            <span class="bm-icon" style="background:#f0f0f0; border: 1px solid rgba(255,255,255,0.15);"></span>
-            None
         </button>
     </div>
 
