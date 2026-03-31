@@ -304,11 +304,7 @@
             <span class="bm-icon" style="background:#f0f0f0; border: 1px solid rgba(255,255,255,0.15);"></span>
             None (id pixel)
         </button>
-        <button class="bm-btn" data-basemap="osm">
-            <span class="bm-icon" style="background:linear-gradient(135deg,#a8d5a2,#7ec8e3,#f5f5dc);"></span>
-            Street
-        </button>
-        <button class="bm-btn" data-basemap="satellite">
+<button class="bm-btn" data-basemap="satellite">
             <span class="bm-icon" style="background:linear-gradient(135deg,#1a3a1a,#2d5a2d,#4a7c59);"></span>
             Satellite
         </button>
@@ -602,14 +598,23 @@
         // ── Identify toggle ───────────────────────────────────────────
         let identifyMode = false;
         const identifyToggleBtn = document.getElementById("identifyToggleBtn");
+        const viewDivEl2 = document.getElementById("viewDiv");
         identifyToggleBtn.addEventListener("click", () => {
             identifyMode = !identifyMode;
             identifyToggleBtn.classList.toggle("active", identifyMode);
             if (!identifyMode) {
                 identifyPopup.classList.remove("visible");
                 view.cursor = "default";
+                // Remove touch listeners to restore normal map interaction
+                viewDivEl2.removeEventListener("touchstart", onTouchStart);
+                viewDivEl2.removeEventListener("touchmove", onTouchMove);
+                viewDivEl2.removeEventListener("touchend", onTouchEnd);
             } else {
                 view.cursor = "crosshair";
+                // Add touch listeners only when identify is active
+                viewDivEl2.addEventListener("touchstart", onTouchStart, { passive: true });
+                viewDivEl2.addEventListener("touchmove", onTouchMove, { passive: true });
+                viewDivEl2.addEventListener("touchend", onTouchEnd, { passive: true });
             }
         });
 
@@ -648,30 +653,30 @@
             return bestDist <= 35 ? best : null;
         }
 
-        // Track touches to distinguish tap vs drag vs pinch
+        // Touch tracking — only used when identify mode is active
         let activeTouches = 0;
         let touchStartX = 0, touchStartY = 0;
         let touchMoved = false;
-        const TAP_MOVE_THRESHOLD = 10; // pixels
+        const TAP_MOVE_THRESHOLD = 10;
 
-        document.getElementById("viewDiv").addEventListener("touchstart", (e) => {
+        function onTouchStart(e) {
             activeTouches = e.touches.length;
             if (e.touches.length === 1) {
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
                 touchMoved = false;
             }
-        }, { passive: true });
-        document.getElementById("viewDiv").addEventListener("touchmove", (e) => {
+        }
+        function onTouchMove(e) {
             if (e.touches.length === 1) {
                 const dx = Math.abs(e.touches[0].clientX - touchStartX);
                 const dy = Math.abs(e.touches[0].clientY - touchStartY);
                 if (dx > TAP_MOVE_THRESHOLD || dy > TAP_MOVE_THRESHOLD) touchMoved = true;
             }
-        }, { passive: true });
-        document.getElementById("viewDiv").addEventListener("touchend", () => {
+        }
+        function onTouchEnd() {
             setTimeout(() => { activeTouches = 0; }, 300);
-        }, { passive: true });
+        }
 
         view.on("click", async (event) => {
             // Always check blue house first
