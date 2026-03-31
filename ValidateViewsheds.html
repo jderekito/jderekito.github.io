@@ -599,22 +599,46 @@
         let identifyMode = false;
         const identifyToggleBtn = document.getElementById("identifyToggleBtn");
         const viewDivEl2 = document.getElementById("viewDiv");
-        identifyToggleBtn.addEventListener("click", () => {
+        let cachedScreenshot = null;
+        let cachedCanvas = null;
+
+        async function captureScreenshot() {
+            const screenshot = await view.takeScreenshot({ width: view.width, height: view.height });
+            const img = new Image();
+            img.src = screenshot.dataUrl;
+            await new Promise(res => img.onload = res);
+            const offscreen = document.createElement("canvas");
+            offscreen.width = view.width;
+            offscreen.height = view.height;
+            const ctx = offscreen.getContext("2d");
+            ctx.drawImage(img, 0, 0);
+            cachedCanvas = offscreen;
+        }
+
+        identifyToggleBtn.addEventListener("click", async () => {
             identifyMode = !identifyMode;
             identifyToggleBtn.classList.toggle("active", identifyMode);
             if (!identifyMode) {
                 identifyPopup.classList.remove("visible");
                 view.cursor = "default";
-                // Remove touch listeners to restore normal map interaction
+                cachedCanvas = null;
                 viewDivEl2.removeEventListener("touchstart", onTouchStart);
                 viewDivEl2.removeEventListener("touchmove", onTouchMove);
                 viewDivEl2.removeEventListener("touchend", onTouchEnd);
             } else {
                 view.cursor = "crosshair";
-                // Add touch listeners only when identify is active
+                // Pre-capture screenshot when identify mode turns on
+                await captureScreenshot();
                 viewDivEl2.addEventListener("touchstart", onTouchStart, { passive: true });
                 viewDivEl2.addEventListener("touchmove", onTouchMove, { passive: true });
                 viewDivEl2.addEventListener("touchend", onTouchEnd, { passive: true });
+            }
+        });
+
+        // Re-capture when map stops moving
+        view.watch("stationary", async (stationary) => {
+            if (stationary && identifyMode) {
+                await captureScreenshot();
             }
         });
 
@@ -699,21 +723,9 @@
             if (viewshedLayers.length === 0) return;
 
             try {
-                // Sample pixel color from the map canvas at click point
-                const canvas = document.querySelector("#viewDiv canvas");
-                if (!canvas) return;
-
-                // Take a screenshot of the view and sample the pixel
-                const screenshot = await view.takeScreenshot({ width: view.width, height: view.height });
-                const img = new Image();
-                img.src = screenshot.dataUrl;
-                await new Promise(res => img.onload = res);
-
-                const offscreen = document.createElement("canvas");
-                offscreen.width = view.width;
-                offscreen.height = view.height;
+                if (!cachedCanvas) return;
+                const offscreen = cachedCanvas;
                 const ctx = offscreen.getContext("2d");
-                ctx.drawImage(img, 0, 0);
 
                 const screenPt = view.toScreen(event.mapPoint);
                 const x = Math.round(screenPt.x);
