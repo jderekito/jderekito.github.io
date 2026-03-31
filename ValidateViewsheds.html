@@ -10,7 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; }
-        html, body, #viewDiv { padding: 0; margin: 0; height: 100%; width: 100%; font-family: 'Syne', sans-serif; }
+        html, body { padding: 0; margin: 0; height: 100%; width: 100%; font-family: 'Syne', sans-serif; overflow: hidden; }
+        #viewDiv { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; touch-action: none; }
 
         #topBar {
             position: absolute; top: 0; left: 0; right: 0; z-index: 20;
