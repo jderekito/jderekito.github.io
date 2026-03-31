@@ -644,10 +644,26 @@
             return bestDist <= 35 ? best : null;
         }
 
-        // Track touch count to prevent identify firing during pinch
+        // Track touches to distinguish tap vs drag vs pinch
         let activeTouches = 0;
+        let touchStartX = 0, touchStartY = 0;
+        let touchMoved = false;
+        const TAP_MOVE_THRESHOLD = 10; // pixels
+
         document.getElementById("viewDiv").addEventListener("touchstart", (e) => {
             activeTouches = e.touches.length;
+            if (e.touches.length === 1) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                touchMoved = false;
+            }
+        }, { passive: true });
+        document.getElementById("viewDiv").addEventListener("touchmove", (e) => {
+            if (e.touches.length === 1) {
+                const dx = Math.abs(e.touches[0].clientX - touchStartX);
+                const dy = Math.abs(e.touches[0].clientY - touchStartY);
+                if (dx > TAP_MOVE_THRESHOLD || dy > TAP_MOVE_THRESHOLD) touchMoved = true;
+            }
         }, { passive: true });
         document.getElementById("viewDiv").addEventListener("touchend", () => {
             setTimeout(() => { activeTouches = 0; }, 300);
@@ -661,9 +677,10 @@
                 return;
             }
 
-            // Only do identify if mode is active, single touch, and a viewshed layer is on
+            // Only do identify if mode is active, single touch, no drag, and a viewshed layer is on
             if (!identifyMode) return;
-            if (activeTouches > 1) return; // pinch gesture — skip identify
+            if (activeTouches > 1) return; // pinch gesture
+            if (touchMoved) return;        // drag/pan gesture
             const viewshedLayers = Object.entries(activeLayers)
                 .filter(([id]) => id.toLowerCase().includes("vvs"))
                 .map(([, layer]) => layer);
