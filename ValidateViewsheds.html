@@ -157,6 +157,24 @@
         #legendPanel.collapsed #legendBody { display: none; }
         #legendPanel.collapsed #legendTitle { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
 
+        #identifyToggleBtn {
+            position: absolute; bottom: 32px; right: 16px; z-index: 15;
+            display: flex; align-items: center; gap: 7px;
+            padding: 7px 11px; background: rgba(10,14,20,0.88);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 7px;
+            color: rgba(255,255,255,0.5); font-family: 'DM Mono', monospace;
+            font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase;
+            cursor: pointer; transition: all 0.18s; backdrop-filter: blur(10px);
+            white-space: nowrap;
+        }
+        #identifyToggleBtn:hover { background: rgba(99,202,183,0.12); border-color: rgba(99,202,183,0.4); color: #63cab7; }
+        #identifyToggleBtn.active { background: rgba(99,202,183,0.15); border-color: #63cab7; color: #63cab7; }
+        #identifyToggleBtn svg { width: 13px; height: 13px; }
+
+        @media (max-width: 768px) {
+            #identifyToggleBtn { bottom: 80px; right: 12px; }
+        }
+
         #identifyPopup {
             position: absolute; z-index: 25; min-width: 180px;
             background: rgba(10,14,20,0.92); backdrop-filter: blur(14px);
@@ -299,6 +317,17 @@
             Minimal
         </button>
     </div>
+
+    <button id="identifyToggleBtn" title="Toggle pixel identify">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="8" cy="8" r="3"/>
+            <line x1="8" y1="1" x2="8" y2="3"/>
+            <line x1="8" y1="13" x2="8" y2="15"/>
+            <line x1="1" y1="8" x2="3" y2="8"/>
+            <line x1="13" y1="8" x2="15" y2="8"/>
+        </svg>
+        Identify
+    </button>
 
     <div id="viewDiv"></div>
 
@@ -565,6 +594,16 @@
             3: { label: "Unseen",       sub: "False Negative", color: "#FF7F7F" }
         };
 
+        // ── Identify toggle ───────────────────────────────────────────
+        let identifyMode = false;
+        const identifyToggleBtn = document.getElementById("identifyToggleBtn");
+        identifyToggleBtn.addEventListener("click", () => {
+            identifyMode = !identifyMode;
+            identifyToggleBtn.classList.toggle("active", identifyMode);
+            if (!identifyMode) identifyPopup.classList.remove("visible");
+            view.cursor = identifyMode ? "crosshair" : "default";
+        });
+
         const identifyPopup = document.getElementById("identifyPopup");
         const identifyLabel  = document.getElementById("identifyPopupLabel");
         const identifySwatch = document.getElementById("identifyPopupSwatch");
@@ -601,14 +640,15 @@
         }
 
         view.on("click", async (event) => {
-            // Skip if blue house was clicked
+            // Always check blue house first
             const hitResponse = await view.hitTest(event);
             if (hitResponse.results.find(r => r.graphic === blueHouseGraphic)) {
                 window.open(blueHouseGraphic.attributes.zillowUrl, "_blank");
                 return;
             }
 
-            // Check if any viewshed layer is active
+            // Only do identify if mode is active and a viewshed layer is on
+            if (!identifyMode) return;
             const viewshedLayers = Object.entries(activeLayers)
                 .filter(([id]) => id.toLowerCase().includes("vvs"))
                 .map(([, layer]) => layer);
