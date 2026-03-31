@@ -605,8 +605,12 @@
         identifyToggleBtn.addEventListener("click", () => {
             identifyMode = !identifyMode;
             identifyToggleBtn.classList.toggle("active", identifyMode);
-            if (!identifyMode) identifyPopup.classList.remove("visible");
-            view.cursor = identifyMode ? "crosshair" : "default";
+            if (!identifyMode) {
+                identifyPopup.classList.remove("visible");
+                view.cursor = "default";
+            } else {
+                view.cursor = "crosshair";
+            }
         });
 
         const identifyPopup = document.getElementById("identifyPopup");
@@ -677,10 +681,13 @@
                 return;
             }
 
-            // Only do identify if mode is active, single touch, no drag, and a viewshed layer is on
+            // Only do identify if mode is active
             if (!identifyMode) return;
-            if (activeTouches > 1) return; // pinch gesture
-            if (touchMoved) return;        // drag/pan gesture
+            // On touch devices, skip if it was a drag or multi-touch
+            if (event.native && event.native.pointerType === "touch") {
+                if (activeTouches > 1) return;
+                if (touchMoved) return;
+            }
             const viewshedLayers = Object.entries(activeLayers)
                 .filter(([id]) => id.toLowerCase().includes("vvs"))
                 .map(([, layer]) => layer);
