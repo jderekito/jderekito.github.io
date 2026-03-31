@@ -531,6 +531,11 @@
                     cb.addEventListener("change", () => {
                         layer.checked = cb.checked;
                         cb.checked ? addImageLayer(layer) : removeImageLayer(layer.id);
+                        // Auto-close layer panel on mobile when a layer is selected
+                        if (window.innerWidth <= 768 && panelOpen) {
+                            panelOpen = false;
+                            layerPanel.classList.add("hidden");
+                        }
                     });
                     const nameEl = document.createElement("span");
                     nameEl.className = "layer-name";
@@ -639,6 +644,15 @@
             return bestDist <= 35 ? best : null;
         }
 
+        // Track touch count to prevent identify firing during pinch
+        let activeTouches = 0;
+        document.getElementById("viewDiv").addEventListener("touchstart", (e) => {
+            activeTouches = e.touches.length;
+        }, { passive: true });
+        document.getElementById("viewDiv").addEventListener("touchend", () => {
+            setTimeout(() => { activeTouches = 0; }, 300);
+        }, { passive: true });
+
         view.on("click", async (event) => {
             // Always check blue house first
             const hitResponse = await view.hitTest(event);
@@ -647,8 +661,9 @@
                 return;
             }
 
-            // Only do identify if mode is active and a viewshed layer is on
+            // Only do identify if mode is active, single touch, and a viewshed layer is on
             if (!identifyMode) return;
+            if (activeTouches > 1) return; // pinch gesture — skip identify
             const viewshedLayers = Object.entries(activeLayers)
                 .filter(([id]) => id.toLowerCase().includes("vvs"))
                 .map(([, layer]) => layer);
