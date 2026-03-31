@@ -158,6 +158,23 @@
         #legendPanel.collapsed #legendBody { display: none; }
         #legendPanel.collapsed #legendTitle { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
 
+        #homeBtn {
+            position: absolute; top: 52px; right: 16px; z-index: 15;
+            display: flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px;
+            background: rgba(10,14,20,0.88); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 7px;
+            color: rgba(255,255,255,0.5); cursor: pointer;
+            transition: all 0.18s;
+        }
+        #homeBtn:hover { background: rgba(99,202,183,0.12); border-color: rgba(99,202,183,0.4); color: #63cab7; }
+        #homeBtn svg { width: 15px; height: 15px; }
+        #homeBtn.hidden { display: none; }
+
+        @media (max-width: 768px) {
+            #homeBtn { top: 48px; right: 12px; }
+        }
+
         #identifyToggleBtn {
             position: absolute; bottom: 32px; right: 16px; z-index: 15;
             display: flex; align-items: center; gap: 7px;
@@ -173,7 +190,24 @@
         #identifyToggleBtn svg { width: 13px; height: 13px; }
 
         @media (max-width: 768px) {
-            #identifyToggleBtn { bottom: 80px; right: 12px; }
+            #homeBtn {
+            position: absolute; top: 52px; right: 16px; z-index: 15;
+            display: flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px;
+            background: rgba(10,14,20,0.88); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.12); border-radius: 7px;
+            color: rgba(255,255,255,0.5); cursor: pointer;
+            transition: all 0.18s;
+        }
+        #homeBtn:hover { background: rgba(99,202,183,0.12); border-color: rgba(99,202,183,0.4); color: #63cab7; }
+        #homeBtn svg { width: 15px; height: 15px; }
+        #homeBtn.hidden { display: none; }
+
+        @media (max-width: 768px) {
+            #homeBtn { top: 48px; right: 12px; }
+        }
+
+        #identifyToggleBtn { bottom: 80px; right: 12px; }
         }
 
         #identifyPopup {
@@ -264,13 +298,6 @@
         </div>
         <div id="legendBody">
         <div class="legend-row">
-            <div class="legend-swatch" style="background:#FFBEBE;"></div>
-            <div>
-                <div class="legend-label">Not Visible</div>
-                <div class="legend-sub">True Negative</div>
-            </div>
-        </div>
-        <div class="legend-row">
             <div class="legend-swatch" style="background:#D3FFBE;"></div>
             <div>
                 <div class="legend-label">Visible</div>
@@ -278,17 +305,24 @@
             </div>
         </div>
         <div class="legend-row">
+            <div class="legend-swatch" style="background:#FFBEBE;"></div>
+            <div>
+                <div class="legend-label">Not Visible</div>
+                <div class="legend-sub">True Negative</div>
+            </div>
+        </div>
+        <div class="legend-row">
             <div class="legend-swatch" style="background:#A3FF73;"></div>
             <div>
                 <div class="legend-label">Seen</div>
-                <div class="legend-sub">False Positive</div>
+                <div class="legend-sub">False Negative</div>
             </div>
         </div>
         <div class="legend-row">
             <div class="legend-swatch" style="background:#FF7F7F;"></div>
             <div>
                 <div class="legend-label">Unseen</div>
-                <div class="legend-sub">False Negative</div>
+                <div class="legend-sub">False Positive</div>
             </div>
         </div>
         </div>
@@ -314,6 +348,12 @@
             Minimal
         </button>
     </div>
+
+    <button id="homeBtn" class="hidden" title="Zoom to site extent">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 6L8 1L15 6V14H10V10H6V14H1V6Z"/>
+        </svg>
+    </button>
 
     <button id="identifyToggleBtn" title="Toggle pixel identify">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -385,7 +425,7 @@
                 {
                     id: "validated_viewsheds", label: "Validated Viewsheds", color: "#34d399",
                     layers: [
-                        { id: "vvs_vb_00", name: "Validated VS — OBS-VB-00", badge: "✓", url: "https://tiles.arcgis.com/tiles/eoP5lsTDzcIUyaQZ/arcgis/rest/services/VB_00_Viewshed_Validated_Clip2/MapServer", isMapServer: true, checked: false },
+                        { id: "vvs_vb_00", name: "Validated VS — OBS-VB-00", badge: "✓", url: "https://tiles.arcgis.com/tiles/eoP5lsTDzcIUyaQZ/arcgis/rest/services/VB_00_Viewshed_Validated_Clip/MapServer", isMapServer: true, checked: false },
                         { id: "vvs_vb_04", name: "Validated VS — OBS-VB-04", badge: "✓", url: "https://tiles.arcgis.com/tiles/eoP5lsTDzcIUyaQZ/arcgis/rest/services/VB_04_Viewshed_Validated_Clip/MapServer", isMapServer: true, checked: false }
                     ]
                 },
@@ -568,6 +608,15 @@
             });
         }
 
+        const homeBtn = document.getElementById("homeBtn");
+        let currentLocation = null;
+
+        homeBtn.addEventListener("click", () => {
+            if (currentLocation) {
+                view.goTo({ center: currentLocation.center, zoom: currentLocation.zoom });
+            }
+        });
+
         document.getElementById("locationSelect").addEventListener("change", function (e) {
             const selected = e.target.value;
             removeAllImageLayers();
@@ -575,11 +624,15 @@
                 groups.forEach(group => group.layers.forEach(layer => { layer.checked = false; }))
             );
             if (locations[selected]) {
+                currentLocation = locations[selected];
                 view.goTo({ center: locations[selected].center, zoom: locations[selected].zoom });
                 collapsedGroups = {};
                 renderLayerPanel(selected);
+                homeBtn.classList.remove("hidden");
                 if (!panelOpen) { panelOpen = true; layerPanel.classList.remove("hidden"); }
             } else {
+                currentLocation = null;
+                homeBtn.classList.add("hidden");
                 locationLabel.textContent = "No location selected";
                 layerPanelBody.innerHTML = '<div class="no-layers">Select a location to load layers</div>';
             }
@@ -593,8 +646,8 @@
         const VIEWSHED_VALUES = {
             0: { label: "Not Visible",  sub: "True Negative",  color: "#FFBEBE" },
             1: { label: "Visible",      sub: "True Positive",  color: "#D3FFBE" },
-            2: { label: "Seen",         sub: "False Positive", color: "#A3FF73" },
-            3: { label: "Unseen",       sub: "False Negative", color: "#FF7F7F" }
+            2: { label: "Seen",         sub: "False Negative", color: "#A3FF73" },
+            3: { label: "Unseen",       sub: "False Positive", color: "#FF7F7F" }
         };
 
         // ── Identify toggle ───────────────────────────────────────────
