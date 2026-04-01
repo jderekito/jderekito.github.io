@@ -382,12 +382,9 @@
 
         // ── Layer defs: direct URLs — layers shared publicly, no auth needed ──
         const SLR_LAYERS = [
-            { id: "int_high_2040", name: "Intermediate High 2040", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/IntHigh_2040/ImageServer", badge: "2040", badgeStyle: "slr-high" },
-            { id: "int_low_2040",  name: "Intermediate Low 2040",  url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/IntLow_2040/ImageServer",  badge: "2040", badgeStyle: "slr-low"  },
-            { id: "int_high_2070", name: "Intermediate High 2070", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/IntHigh_2070/ImageServer", badge: "2070", badgeStyle: "slr-high" },
-            { id: "int_low_2070",  name: "Intermediate Low 2070",  url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/IntLow_2070/ImageServer",  badge: "2070", badgeStyle: "slr-low"  },
-            { id: "int_high_2100", name: "Intermediate High 2100", url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/IntHigh_2100/ImageServer", badge: "2100", badgeStyle: "slr-high" },
-            { id: "int_low_2100",  name: "Intermediate Low 2100",  url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/IntLow_2100/ImageServer",  badge: "2100", badgeStyle: "slr-low"  }
+            { id: "int_high_ht_2040", name: "Intermediate High 2040", url: "https://tiles.arcgis.com/tiles/eoP5lsTDzcIUyaQZ/arcgis/rest/services/IntHighHT_2040_Clip/MapServer", badge: "2040", badgeStyle: "slr-high", isMapServer: true },
+            { id: "int_high_ht_2070", name: "Intermediate High 2070", url: "https://tiles.arcgis.com/tiles/eoP5lsTDzcIUyaQZ/arcgis/rest/services/IntHighHT_2070_Clip/MapServer", badge: "2070", badgeStyle: "slr-high", isMapServer: true },
+            { id: "int_high_ht_2100", name: "Intermediate High 2100", url: "https://tiles.arcgis.com/tiles/eoP5lsTDzcIUyaQZ/arcgis/rest/services/IntHighHT_2100_Clip/MapServer", badge: "2100", badgeStyle: "slr-high", isMapServer: true }
         ];
 
         const LULC_LAYER = {
