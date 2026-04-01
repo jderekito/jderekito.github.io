@@ -734,28 +734,7 @@
             3: { label: "Unseen",       sub: "False Positive", color: "#FF7F7F" }
         };
 
-        const NLCD_CLASSES = {
-            11: { label: "Open Water",                    color: "#476ba0" },
-            12: { label: "Perennial Ice/Snow",            color: "#d1defa" },
-            21: { label: "Developed, Open Space",         color: "#dcd939" },
-            22: { label: "Developed, Low Intensity",      color: "#d98a7b" },
-            23: { label: "Developed, Med Intensity",      color: "#de3333" },
-            24: { label: "Developed, High Intensity",     color: "#9e1f1f" },
-            31: { label: "Barren Land",                   color: "#b39c71" },
-            41: { label: "Deciduous Forest",              color: "#74a466" },
-            42: { label: "Evergreen Forest",              color: "#1f5e39" },
-            43: { label: "Mixed Forest",                  color: "#b5c966" },
-            51: { label: "Dwarf Scrub",                   color: "#7ba4ca" },
-            52: { label: "Shrub/Scrub",                   color: "#c6b98d" },
-            71: { label: "Grassland/Herbaceous",          color: "#b5ca8a" },
-            72: { label: "Sedge/Herbaceous",              color: "#6aac5e" },
-            73: { label: "Lichens",                       color: "#c1dce5" },
-            74: { label: "Moss",                          color: "#d1e7e4" },
-            81: { label: "Pasture/Hay",                   color: "#bad8ee" },
-            82: { label: "Cultivated Crops",              color: "#dcd939" },
-            90: { label: "Woody Wetlands",                color: "#b8d2ee" },
-            95: { label: "Emergent Herb. Wetlands",       color: "#a3c5e5" }
-        };
+
 
         // ── Identify toggle ───────────────────────────────────────────
         let identifyMode = false;
@@ -867,41 +846,12 @@
             const viewshedLayers = Object.entries(activeLayers)
                 .filter(([id]) => id.toLowerCase().includes("vvs"))
                 .map(([, layer]) => layer);
-            const nlcdLayer = activeLayers["lulc_study"];
-            if (viewshedLayers.length === 0 && !nlcdLayer) return;
+            if (viewshedLayers.length === 0) return;
 
             const touch = e.changedTouches[0];
             const rect = viewDivEl2.getBoundingClientRect();
             const x = Math.round(touch.clientX - rect.left);
             const y = Math.round(touch.clientY - rect.top);
-
-            // NLCD identify via ImageryLayer
-            if (nlcdLayer && viewshedLayers.length === 0) {
-                try {
-                    const mapPoint = view.toMap({ x, y });
-                    const result = await nlcdLayer.identify({
-                        geometry: mapPoint,
-                        returnCatalogItems: false
-                    });
-                    const val = parseInt(result?.value);
-                    const info = NLCD_CLASSES[val];
-                    if (info) {
-                        identifyLabel.textContent = info.label;
-                        identifySwatch.style.background = info.color;
-                        identifySub.textContent = `Class ${val}`;
-                    } else {
-                        identifyLabel.textContent = `Value: ${val}`;
-                        identifySwatch.style.background = "rgba(255,255,255,0.2)";
-                        identifySub.textContent = "";
-                    }
-                    const px = Math.min(x + 12, window.innerWidth - 200);
-                    const py = Math.min(y + 12, window.innerHeight - 100);
-                    identifyPopup.style.left = px + "px";
-                    identifyPopup.style.top  = py + "px";
-                    identifyPopup.classList.add("visible");
-                } catch(e) { console.warn("NLCD identify failed", e); }
-                return;
-            }
 
             if (!cachedCanvas) return;
 
@@ -951,10 +901,12 @@
                 // If NLCD is active and no viewshed, use ImageryLayer identify
                 const nlcdLayer = activeLayers["lulc_study"];
                 if (nlcdLayer && viewshedLayers.length === 0) {
-                    const result = await nlcdLayer.identify({
-                        geometry: event.mapPoint,
-                        returnCatalogItems: false
+                    console.log("NLCD identify start", event.mapPoint);
+                const result = await nlcdLayer.identify(event.mapPoint, {
+                        returnCatalogItems: false,
+                        returnPixelValues: true
                     });
+                    console.log("NLCD result:", JSON.stringify(result));
                     const val = parseInt(result?.value);
                     const info = NLCD_CLASSES[val];
                     const screenPt = view.toScreen(event.mapPoint);
