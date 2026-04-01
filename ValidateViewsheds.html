@@ -369,7 +369,7 @@
     <div id="viewDiv"></div>
 
     <script type="module">
-        const [Map, MapView, GraphicsLayer, Graphic, Point, ImageryTileLayer, TileLayer, reactiveUtils] = await $arcgis.import([
+        const [Map, MapView, GraphicsLayer, Graphic, Point, ImageryTileLayer, TileLayer, reactiveUtils, ImageryLayer] = await $arcgis.import([
             "@arcgis/core/Map.js",
             "@arcgis/core/views/MapView.js",
             "@arcgis/core/layers/GraphicsLayer.js",
@@ -378,6 +378,7 @@
             "@arcgis/core/layers/ImageryTileLayer.js",
             "@arcgis/core/layers/TileLayer.js",
             "@arcgis/core/core/reactiveUtils.js",
+            "@arcgis/core/layers/ImageryLayer.js",
         ]);
 
         // ── Layer defs: direct URLs — layers shared publicly, no auth needed ──
@@ -461,7 +462,7 @@
             if (layerDef.isMapServer && layerDef.url) {
                 layer = new TileLayer({ url: layerDef.url, opacity: 0.75 });
             } else if (layerDef.portalItemId) {
-                layer = new ImageryTileLayer({ portalItem: { id: layerDef.portalItemId }, opacity: 0.75 });
+                layer = new ImageryLayer({ portalItem: { id: layerDef.portalItemId }, opacity: 0.75 });
             } else if (layerDef.url) {
                 layer = new ImageryTileLayer({ url: layerDef.url, opacity: 0.75 });
             } else {
