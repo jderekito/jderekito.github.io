@@ -462,13 +462,27 @@
             if (layerDef.isMapServer && layerDef.url) {
                 layer = new TileLayer({ url: layerDef.url, opacity: 0.75 });
             } else if (layerDef.portalItemId) {
-                layer = new ImageryLayer({ portalItem: { id: layerDef.portalItemId }, opacity: 0.75 });
+                layer = new ImageryLayer({ portalItem: { id: layerDef.portalItemId }, opacity: 0.45 });
             } else if (layerDef.url) {
                 layer = new ImageryTileLayer({ url: layerDef.url, opacity: 0.75 });
             } else {
                 console.error("No URL or portalItemId for layer", layerDef.id); return;
             }
-            map.add(layer);
+            // Insert NLCD/portal layers below viewshed layers so viewsheds always render on top
+            if (layerDef.portalItemId) {
+                // Find the lowest index of any active viewshed layer and insert below it
+                const viewshedLayers = Object.values(activeLayers).filter((_, i) =>
+                    Object.keys(activeLayers)[i].includes("vvs")
+                );
+                if (viewshedLayers.length > 0) {
+                    const minIdx = Math.min(...viewshedLayers.map(l => map.layers.indexOf(l)));
+                    map.layers.add(layer, minIdx);
+                } else {
+                    map.add(layer);
+                }
+            } else {
+                map.add(layer);
+            }
             activeLayers[layerDef.id] = layer;
             updateLegendVisibility();
         }
