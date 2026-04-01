@@ -388,9 +388,9 @@
         ];
 
         const LULC_LAYER = {
-            id: "lulc_study", name: "LULC Study Area",
-            url: "https://tiledimageservices.arcgis.com/eoP5lsTDzcIUyaQZ/arcgis/rest/services/LULC_StudyArea/ImageServer",
-            badge: "LULC", badgeStyle: "lulc"
+            id: "lulc_study", name: "NLCD Land Cover (Annual)",
+            portalItemId: "32e2ccc6416746a9a72b4d216813f84f",
+            badge: "NLCD", badgeStyle: "lulc"
         };
 
         // ── Location config ───────────────────────────────────────────
@@ -457,10 +457,16 @@
 
         function addImageLayer(layerDef) {
             if (activeLayers[layerDef.id]) return;
-            if (!layerDef.url) { console.error("No URL for layer", layerDef.id); return; }
-            const layer = layerDef.isMapServer
-                ? new TileLayer({ url: layerDef.url, opacity: 0.75 })
-                : new ImageryTileLayer({ url: layerDef.url, opacity: 0.75 });
+            let layer;
+            if (layerDef.isMapServer && layerDef.url) {
+                layer = new TileLayer({ url: layerDef.url, opacity: 0.75 });
+            } else if (layerDef.portalItemId) {
+                layer = new ImageryTileLayer({ portalItem: { id: layerDef.portalItemId }, opacity: 0.75 });
+            } else if (layerDef.url) {
+                layer = new ImageryTileLayer({ url: layerDef.url, opacity: 0.75 });
+            } else {
+                console.error("No URL or portalItemId for layer", layerDef.id); return;
+            }
             map.add(layer);
             activeLayers[layerDef.id] = layer;
             updateLegendVisibility();
