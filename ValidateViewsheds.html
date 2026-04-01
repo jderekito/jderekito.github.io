@@ -289,7 +289,7 @@
 
     <div id="legendPanel" class="hidden">
         <div id="legendTitle">
-            Viewshed Legend
+            <span id="legendTitleText">Legend</span>
             <button id="legendCollapseBtn" title="Hide legend">
                 <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="4 6 8 10 12 6"/>
@@ -297,34 +297,39 @@
             </button>
         </div>
         <div id="legendBody">
-        <div class="legend-row">
-            <div class="legend-swatch" style="background:#D3FFBE;"></div>
-            <div>
-                <div class="legend-label">Visible</div>
-                <div class="legend-sub">True Positive</div>
+            <div id="viewshedLegend">
+                <div class="legend-row">
+                    <div class="legend-swatch" style="background:#D3FFBE;"></div>
+                    <div>
+                        <div class="legend-label">Visible</div>
+                        <div class="legend-sub">True Positive</div>
+                    </div>
+                </div>
+                <div class="legend-row">
+                    <div class="legend-swatch" style="background:#FFBEBE;"></div>
+                    <div>
+                        <div class="legend-label">Not Visible</div>
+                        <div class="legend-sub">True Negative</div>
+                    </div>
+                </div>
+                <div class="legend-row">
+                    <div class="legend-swatch" style="background:#A3FF73;"></div>
+                    <div>
+                        <div class="legend-label">Seen</div>
+                        <div class="legend-sub">False Negative</div>
+                    </div>
+                </div>
+                <div class="legend-row">
+                    <div class="legend-swatch" style="background:#FF7F7F;"></div>
+                    <div>
+                        <div class="legend-label">Unseen</div>
+                        <div class="legend-sub">False Positive</div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="legend-row">
-            <div class="legend-swatch" style="background:#FFBEBE;"></div>
-            <div>
-                <div class="legend-label">Not Visible</div>
-                <div class="legend-sub">True Negative</div>
+            <div id="nlcdLegend" style="display:none;">
+                <div id="nlcdLegendItems"></div>
             </div>
-        </div>
-        <div class="legend-row">
-            <div class="legend-swatch" style="background:#A3FF73;"></div>
-            <div>
-                <div class="legend-label">Seen</div>
-                <div class="legend-sub">False Negative</div>
-            </div>
-        </div>
-        <div class="legend-row">
-            <div class="legend-swatch" style="background:#FF7F7F;"></div>
-            <div>
-                <div class="legend-label">Unseen</div>
-                <div class="legend-sub">False Positive</div>
-            </div>
-        </div>
         </div>
     </div>
 
@@ -446,11 +451,72 @@
 
 
         function updateLegendVisibility() {
-            const anyViewshed = Object.keys(activeLayers).some(id => id.toLowerCase().includes("vvs"));
+            const anyViewshed = Object.keys(activeLayers).some(id => id.includes("vvs"));
+            const anyNLCD = Object.keys(activeLayers).some(id => id === "lulc_study");
             const legendEl = document.getElementById("legendPanel");
-            legendEl.classList.toggle("hidden", !anyViewshed);
-            // On mobile, close layer panel when legend opens to avoid overlap
-            if (anyViewshed && window.innerWidth <= 768 && panelOpen) {
+            const viewshedLegend = document.getElementById("viewshedLegend");
+            const nlcdLegend = document.getElementById("nlcdLegend");
+            const titleText = document.getElementById("legendTitleText");
+
+            const showLegend = anyViewshed || anyNLCD;
+            legendEl.classList.toggle("hidden", !showLegend);
+
+            // Show/hide sections
+            viewshedLegend.style.display = anyViewshed ? "block" : "none";
+            nlcdLegend.style.display = anyNLCD ? "block" : "none";
+
+            // Add divider between sections if both active
+            const divider = document.getElementById("legendDivider");
+            if (anyViewshed && anyNLCD) {
+                if (!divider) {
+                    const d = document.createElement("div");
+                    d.id = "legendDivider";
+                    d.style.cssText = "height:1px;background:rgba(255,255,255,0.08);margin:6px 0;";
+                    viewshedLegend.after(d);
+                }
+            } else if (divider) divider.remove();
+
+            // Update title
+            if (anyViewshed && anyNLCD) titleText.textContent = "Legend";
+            else if (anyViewshed) titleText.textContent = "Viewshed Legend";
+            else if (anyNLCD) titleText.textContent = "NLCD Land Cover";
+
+            // Populate NLCD legend with standard 16-class categories
+            if (anyNLCD) {
+                const nlcdItems = document.getElementById("nlcdLegendItems");
+                if (nlcdItems.children.length === 0) {
+                    const NLCD_CLASSES = [
+                        { color: "#476ba0", label: "Open Water" },
+                        { color: "#d1defa", label: "Perennial Ice/Snow" },
+                        { color: "#dcd939", label: "Developed, Open Space" },
+                        { color: "#d98a7b", label: "Developed, Low Intensity" },
+                        { color: "#de3333", label: "Developed, Med Intensity" },
+                        { color: "#9e1f1f", label: "Developed, High Intensity" },
+                        { color: "#b39c71", label: "Barren Land" },
+                        { color: "#74a466", label: "Deciduous Forest" },
+                        { color: "#1f5e39", label: "Evergreen Forest" },
+                        { color: "#b5c966", label: "Mixed Forest" },
+                        { color: "#7ba4ca", label: "Dwarf Scrub" },
+                        { color: "#c6b98d", label: "Shrub/Scrub" },
+                        { color: "#b5ca8a", label: "Grassland/Herbaceous" },
+                        { color: "#6aac5e", label: "Sedge/Herbaceous" },
+                        { color: "#c1dce5", label: "Lichens" },
+                        { color: "#d1e7e4", label: "Moss" },
+                        { color: "#bad8ee", label: "Pasture/Hay" },
+                        { color: "#dcd939", label: "Cultivated Crops" },
+                        { color: "#b8d2ee", label: "Woody Wetlands" },
+                        { color: "#a3c5e5", label: "Emergent Herb. Wetlands" }
+                    ];
+                    nlcdItems.innerHTML = NLCD_CLASSES.map(c => `
+                        <div class="legend-row">
+                            <div class="legend-swatch" style="background:${c.color};"></div>
+                            <div class="legend-label">${c.label}</div>
+                        </div>`).join("");
+                }
+            }
+
+            // On mobile, close layer panel when legend opens
+            if (showLegend && window.innerWidth <= 768 && panelOpen) {
                 panelOpen = false;
                 layerPanel.classList.add("hidden");
             }
